@@ -3,7 +3,7 @@
 
 import pytest
 
-from sinfonia.wireguard_key import WireguardKey
+from sinfonia_tier3.wireguard import WireguardKey
 
 
 def urlsafe_encoding(key):

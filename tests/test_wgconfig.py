@@ -5,10 +5,11 @@ import copy
 
 import pytest
 
-from sinfonia.cli_tier3 import create_wireguard_config
+from sinfonia_tier3.wireguard import WireguardConfig, WireguardKey
 
 IFNAME = "wg-test"
 UUID = "00000000-0000-0000-0000-000000000000"
+PRIVATE_KEY = "DnLEmfJzVoCRJYXzdSXIhTqnjygnhh6O+I3ErMS6OUg="
 TUNNEL_CONFIG = {
     "publicKey": "DnLEmfJzVoCRJYXzdSXIhTqnjygnhh6O+I3ErMS6OUg=",
     "allowedIPs": ["10.0.0.1/32"],
@@ -31,7 +32,9 @@ Endpoint = 127.0.0.1:51820
 def test_create_wireguard_config(monkeypatch, tmp_path):
     monkeypatch.chdir(tmp_path)
 
-    create_wireguard_config(IFNAME, TUNNEL_CONFIG)
+    private_key = WireguardKey(PRIVATE_KEY)
+    config = WireguardConfig.from_dict(private_key, TUNNEL_CONFIG)
+    config.write_wireguard_conf(f"./{IFNAME}.conf")
 
     generated_conffile = tmp_path / f"{IFNAME}.conf"
     assert generated_conffile.exists()
@@ -45,4 +48,5 @@ def test_create_wireguard_missing_config(monkeypatch, tmp_path):
     del bad_config["publicKey"]
 
     with pytest.raises(KeyError):
-        create_wireguard_config(IFNAME, bad_config)
+        private_key = WireguardKey(PRIVATE_KEY)
+        WireguardConfig.from_dict(private_key, bad_config)
