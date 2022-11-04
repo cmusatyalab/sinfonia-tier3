@@ -10,6 +10,11 @@ authors = [
     "Jan Harkes <jaharkes@cs.cmu.edu>",
 ]
 license = "MIT"
+readme = "README.md"
+repository = "https://github.com/cmusatyalab/sinfonia-tier3"
+classifiers = [
+    "Intended Audience :: Developers",
+]
 packages = [
     { include = "sinfonia_tier3", from = "src" },
     { include = "tests", format="sdist" },
