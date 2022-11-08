@@ -72,6 +72,12 @@ def _const_time_swap(a, b, swap):
 
 def _raw_curve25519(base, n):
     """Raise the point base to the power n"""
+    # RFC7748 section 5
+    # u-coordinates are ... encoded as an array of bytes ... When receiving
+    # such an array, implementations of X25519 MUST mask the most significant
+    # bit in the final byte.
+    base &= ~(128 << 8 * 31)
+
     zero = (1, 0)
     one = (base, 1)
     mP, m1P = zero, one
