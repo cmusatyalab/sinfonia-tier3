@@ -45,12 +45,24 @@ class CloudletDeployment:
     ) -> CloudletDeployment:
         return cls(
             resp["UUID"],
-            WireguardKey(resp["ApplicationKey"]),
+            resp["ApplicationKey"],
             resp["Status"],
             WireguardConfig.from_dict(private_key, resp["TunnelConfig"]),
             resp.get("DeploymentName", ""),
             resp.get("Created"),
         )
+
+
+class WireguardKeyFormatter:
+    def validate(self, value: str) -> bool:
+        try:
+            WireguardKey(value)
+            return True
+        except ValueError:
+            return False
+
+    def unmarshal(self, value: str) -> WireguardKey:
+        return WireguardKey(value)
 
 
 def sinfonia_deploy(
@@ -97,7 +109,7 @@ def sinfonia_deploy(
 
     # validate the response
     validator = ResponseValidator(
-        spec, custom_formatters={"wireguard_public_key": WireguardKey}
+        spec, custom_formatters={"wireguard_public_key": WireguardKeyFormatter()}
     )
     result = validator.validate(openapi_request, openapi_response)
     result.raise_for_errors()

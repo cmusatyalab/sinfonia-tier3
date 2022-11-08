@@ -23,30 +23,52 @@ from ipaddress import (
     ip_interface,
 )
 from pathlib import Path
+from secrets import token_bytes
 from typing import Any
 
 import wgconfig
 from attrs import define, field
 
+from .curve25519 import X25519PrivateKey
 
-def convert_wireguard_key(value: str | WireguardKey) -> bytes:
+
+def convert_wireguard_key(value: str | bytes | WireguardKey) -> bytes:
     """Accepts urlsafe encoded base64 keys with possibly missing padding.
     Checks if the (decoded) key is a 32-byte byte string
     """
     if isinstance(value, WireguardKey):
         return value.keydata
 
-    raw_key = urlsafe_b64decode(value + "==")
+    if isinstance(value, bytes):
+        raw_key = value
+    else:
+        raw_key = urlsafe_b64decode(value + "==")
 
     if len(raw_key) != 32:
-        raise ValueError
+        raise ValueError("Invalid WireGuard key length")
 
     return raw_key
 
 
-@define
+@define(frozen=True)
 class WireguardKey:
     keydata: bytes = field(converter=convert_wireguard_key)
+
+    @classmethod
+    def generate(cls) -> WireguardKey:
+        """Generate a new private key"""
+        random_data = token_bytes(32)
+        # turn it into a proper curve25519 private key by fixing/clamping the value
+        private_bytes = X25519PrivateKey.from_private_bytes(random_data).private_bytes()
+        return cls(private_bytes)
+
+    def public_key(self) -> WireguardKey:
+        """Derive public key from private key"""
+        public_bytes = X25519PrivateKey.from_private_bytes(self.keydata).public_key()
+        return WireguardKey(public_bytes)
+
+    def __bool__(self) -> bool:
+        return int.from_bytes(self.keydata, "little") != 0
 
     def __str__(self) -> str:
         return standard_b64encode(self.keydata).decode("utf-8")
@@ -54,24 +76,6 @@ class WireguardKey:
     @property
     def urlsafe(self) -> str:
         return urlsafe_b64encode(self.keydata).decode("utf-8").rstrip("=")
-
-    @property
-    def k8s_label(self) -> str:
-        """Kubernetes label values have to begin and end with alphanumeric
-        characters and be less than 63 byte."""
-        return f"wg-{self.urlsafe}-pubkey"
-
-    @classmethod
-    def validate(cls, value: str) -> bool:
-        try:
-            cls(value)
-            return True
-        except ValueError:
-            return False
-
-    @classmethod
-    def unmarshal(cls, value):
-        return value
 
 
 def is_ipaddress(value: str) -> bool:

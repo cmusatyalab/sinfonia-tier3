@@ -8,50 +8,49 @@
 # SPDX-License-Identifier: MIT
 #
 
+from __future__ import annotations
+
 import os
 from pathlib import Path
-from typing import Dict
 from uuid import UUID
 
-import wgconfig.wgexec
 import yaml
-from attrs import define, field
+from attrs import define
 from xdg import xdg_cache_home
 
 from .wireguard import WireguardKey
 
 
-def _to_wireguard_key(value: str) -> WireguardKey:
-    return WireguardKey(value)
-
-
 @define
 class KeyCacheEntry:
-    private_key: WireguardKey = field(converter=_to_wireguard_key)
-    public_key: WireguardKey = field(converter=_to_wireguard_key)
+    private_key: WireguardKey
+    public_key: WireguardKey
 
     @classmethod
-    def new(cls) -> "KeyCacheEntry":
-        private_key, public_key = wgconfig.wgexec.generate_keypair()
+    def new(cls) -> KeyCacheEntry:
+        private_key = WireguardKey.generate()
+        public_key = private_key.public_key()
         return cls(private_key, public_key)
 
     @classmethod
-    def from_yaml(cls, text: str) -> "KeyCacheEntry":
+    def from_yaml(cls, text: str) -> KeyCacheEntry:
         # raises ValueError when input is incorrectly formatted
         try:
             keys = yaml.safe_load(text)
-            return cls(keys["private_key"], keys["public_key"])
+            return cls(
+                WireguardKey(keys["private_key"]), WireguardKey(keys["public_key"])
+            )
         except (TypeError, KeyError, ValueError) as exc:
             raise ValueError("Unexpected cache file format") from exc
 
     @classmethod
-    def from_file(cls, cache_file: Path) -> "KeyCacheEntry":
+    def from_file(cls, cache_file: Path) -> KeyCacheEntry:
         # raises FileNotFoundError when file doesn't exist
         # raises ValueError when input is incorrectly formatted
         text = cache_file.read_text()
         return cls.from_yaml(text)
 
-    def to_dict(self) -> Dict[str, str]:
+    def to_dict(self) -> dict[str, str]:
         # return attrs.asdict(self, value_serializer=lambda _inst, _fld, val: str(val))
         return dict(public_key=str(self.public_key), private_key=str(self.private_key))
 
@@ -62,7 +61,7 @@ class KeyCacheEntry:
             return yaml.dump(self.to_dict(), fh)
 
     @classmethod
-    def load(cls, application_uuid: UUID) -> "KeyCacheEntry":
+    def load(cls, application_uuid: UUID) -> KeyCacheEntry:
         """Return a new public/private for the application
 
         Reuse a cached copy from ~/.cache/sinfonia/<application-uuid> if it exists.

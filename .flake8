@@ -5,3 +5,6 @@
 [flake8]
 max-line-length = 88
 extend-ignore = E203
+per-file-ignores =
+    # ignore long comments
+    src/sinfonia_tier3/curve25519.py: E501,
