@@ -6,12 +6,12 @@ import pytest
 from sinfonia_tier3.wireguard import WireguardKey
 
 
-def urlsafe_encoding(key):
+def urlsafe_encoding(key: str) -> str:
     return key.translate(str.maketrans("/+", "_-")).rstrip("=")
 
 
 class TestWireguardKey:
-    def test_create(self, example_wgkey):
+    def test_create(self, example_wgkey: str) -> None:
         stored_key = WireguardKey(example_wgkey)
         assert str(stored_key) == example_wgkey
         assert stored_key.urlsafe == urlsafe_encoding(example_wgkey)

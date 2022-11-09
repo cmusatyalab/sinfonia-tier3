@@ -4,10 +4,12 @@
 from pathlib import Path
 from uuid import UUID
 
+from _pytest.monkeypatch import MonkeyPatch
+
 from sinfonia_tier3.key_cache import KeyCacheEntry
 
 
-def test_cached_keys(monkeypatch, mock_generate_keypair, tmp_path):
+def test_cached_keys(monkeypatch: MonkeyPatch, tmp_path: Path) -> None:
     """test that the key for a uuid persists"""
     cache_dir = Path(tmp_path, "cache").resolve()
     monkeypatch.setenv("XDG_CACHE_HOME", str(cache_dir))
@@ -24,7 +26,7 @@ def test_cached_keys(monkeypatch, mock_generate_keypair, tmp_path):
     assert (cl_cache_dir / str(uuid)).exists()
 
 
-def test_unique_keys(monkeypatch, mock_generate_keypair, tmp_path):
+def test_unique_keys(monkeypatch: MonkeyPatch, tmp_path: Path) -> None:
     """validate that different uuids return different keys"""
     cache_dir = Path(tmp_path, "cache").resolve()
     monkeypatch.setenv("XDG_CACHE_HOME", str(cache_dir))

@@ -2,8 +2,10 @@
 # SPDX-License-Identifier: MIT
 
 import copy
+from pathlib import Path
 
 import pytest
+from _pytest.monkeypatch import MonkeyPatch
 
 from sinfonia_tier3.wireguard import WireguardConfig, WireguardKey
 
@@ -29,7 +31,7 @@ Endpoint = 127.0.0.1:51820
 """
 
 
-def test_create_wireguard_config(monkeypatch, tmp_path):
+def test_create_wireguard_config(monkeypatch: MonkeyPatch, tmp_path: Path) -> None:
     monkeypatch.chdir(tmp_path)
 
     private_key = WireguardKey(PRIVATE_KEY)
@@ -41,7 +43,9 @@ def test_create_wireguard_config(monkeypatch, tmp_path):
     assert generated_conffile.read_text() == TUNNEL_CONFIG_CONTENT
 
 
-def test_create_wireguard_missing_config(monkeypatch, tmp_path):
+def test_create_wireguard_missing_config(
+    monkeypatch: MonkeyPatch, tmp_path: str
+) -> None:
     monkeypatch.chdir(tmp_path)
 
     bad_config = copy.deepcopy(TUNNEL_CONFIG)

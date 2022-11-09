@@ -32,7 +32,7 @@ SUCCESSFUL_DEPLOYMENT = [
 ]
 
 
-def test_parser():
+def test_parser() -> None:
     with pytest.raises(SystemExit):
         parse_args([])
 

@@ -125,7 +125,7 @@ class WireguardConfig:
             allowed_ips,
         )
 
-    def write_wireguard_conf(self, filename: os.PathLike | str) -> None:
+    def write_wireguard_conf(self, filename: str | os.PathLike[str]) -> None:
         """Create wireguard tunnel configuration"""
         wireguard_config = wgconfig.WGConfig(Path(filename).resolve())
 
@@ -156,5 +156,5 @@ class WireguardConfig:
         resolvconf_config += "\noptions ndots:5"
         return resolvconf_config
 
-    def write_resolv_conf(self, filename: os.PathLike | str) -> None:
+    def write_resolv_conf(self, filename: str | os.PathLike[str]) -> None:
         Path(filename).write_text(self.dump_resolv_conf())

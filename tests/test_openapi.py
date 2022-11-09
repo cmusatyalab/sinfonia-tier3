@@ -10,11 +10,11 @@ from openapi_core import create_spec
 
 class TestOpenApiSpecs:
     @pytest.fixture(scope="class")
-    def specification_dir(self):
+    def specification_dir(self) -> Path:
         return Path(__file__).parents[1] / "src" / "sinfonia_tier3" / "openapi"
 
     @pytest.mark.filterwarnings("ignore::DeprecationWarning")
-    def test_tier2_spec(self, specification_dir):
+    def test_tier2_spec(self, specification_dir: Path) -> None:
         spec_yaml = specification_dir.joinpath("sinfonia_tier2.yaml").read_text()
         spec_dict = yaml.safe_load(spec_yaml)
         spec = create_spec(spec_dict)

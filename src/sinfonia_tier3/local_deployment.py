@@ -16,6 +16,7 @@ from contextlib import contextmanager
 from pathlib import Path
 from shutil import which
 from tempfile import TemporaryDirectory
+from typing import Iterator
 
 import randomname
 
@@ -44,7 +45,7 @@ def unique_namespace_name(name: str) -> str:
 
 
 @contextmanager
-def network_namespace(namespace: str, resolv_conf: Path):
+def network_namespace(namespace: str, resolv_conf: Path) -> Iterator[list[str]]:
     assert ip is not None
     assert mkdir is not None
     assert rm is not None

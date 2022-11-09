@@ -21,14 +21,15 @@ the same names.
 
 #                                  #### WARNING ####
 
-# Since this code makes use of Python's built-in large integer types, it is NOT EXPECTED
-# to run in constant time. While some effort is made to minimise the time variations,
-# the underlying math functions are likely to have running times that are highly
-# value-dependent, leaving this code potentially vulnerable to timing attacks. If this
-# code is to be used to provide cryptographic security in an environment where the start
-# and end times of the execution can be guessed, inferred or measured then it is critical
-# that steps are taken to hide the execution time, for instance by adding a delay so that
-# encrypted packets are not sent until a fixed time after the _start_ of execution.
+# Since this code makes use of Python's built-in large integer types, it is NOT
+# EXPECTED to run in constant time. While some effort is made to minimise the time
+# variations, the underlying math functions are likely to have running times that are
+# highly value-dependent, leaving this code potentially vulnerable to timing attacks.
+# If this code is to be used to provide cryptographic security in an environment where
+# the start and end times of the execution can be guessed, inferred or measured then it
+# is critical that steps are taken to hide the execution time, for instance by adding a
+# delay so that encrypted packets are not sent until a fixed time after the _start_ of
+# execution.
 
 
 # Implements ladder multiplication as described in "Montgomery curves and the Montgomery
@@ -38,11 +39,15 @@ the same names.
 # y**2 = x**3 + A * x**2 + x  mod P
 # where P = 2**255-19 and A = 486662
 
+from typing import Tuple, Union
+
+Point = Tuple[int, int]
+
 P = 2**255 - 19
 _A = 486662
 
 
-def _point_add(point_n, point_m, point_diff):
+def _point_add(point_n: Point, point_m: Point, point_diff: Point) -> Point:
     """Given the projection of two points and their difference, return their sum"""
     (xn, zn) = point_n
     (xm, zm) = point_m
@@ -52,7 +57,7 @@ def _point_add(point_n, point_m, point_diff):
     return x % P, z % P
 
 
-def _point_double(point_n):
+def _point_double(point_n: Point) -> Point:
     """Double a point provided in projective coordinates"""
     (xn, zn) = point_n
     xn2 = xn**2
@@ -63,14 +68,14 @@ def _point_double(point_n):
     return x % P, z % P
 
 
-def _const_time_swap(a, b, swap):
+def _const_time_swap(a: Point, b: Point, swap: bool) -> Tuple[Point, Point]:
     """Swap two values in constant time"""
     index = int(swap) * 2
     temp = (a, b, b, a)
-    return temp[index : index + 2]
+    return temp[index], temp[index + 1]
 
 
-def _raw_curve25519(base, n):
+def _raw_curve25519(base: int, n: int) -> int:
     """Raise the point base to the power n"""
     # RFC7748 section 5
     # u-coordinates are ... encoded as an array of bytes ... When receiving
@@ -93,19 +98,19 @@ def _raw_curve25519(base, n):
     return (x * inv_z) % P
 
 
-def _unpack_number(s):
+def _unpack_number(s: bytes) -> int:
     """Unpack 32 bytes to a 256 bit value"""
     if len(s) != 32:
         raise ValueError("Curve25519 values must be 32 bytes")
     return int.from_bytes(s, "little")
 
 
-def _pack_number(n):
+def _pack_number(n: int) -> bytes:
     """Pack a value into 32 bytes"""
     return n.to_bytes(32, "little")
 
 
-def _fix_secret(n):
+def _fix_secret(n: int) -> int:
     """Mask a value to be an acceptable exponent"""
     n &= ~7
     n &= ~(128 << 8 * 31)
@@ -113,46 +118,46 @@ def _fix_secret(n):
     return n
 
 
-def curve25519(base_point_raw, secret_raw):
+def curve25519(base_point_raw: bytes, secret_raw: bytes) -> bytes:
     """Raise the base point to a given power"""
     base_point = _unpack_number(base_point_raw)
     secret = _fix_secret(_unpack_number(secret_raw))
     return _pack_number(_raw_curve25519(base_point, secret))
 
 
-def curve25519_base(secret_raw):
+def curve25519_base(secret_raw: bytes) -> bytes:
     """Raise the generator point to a given power"""
     secret = _fix_secret(_unpack_number(secret_raw))
     return _pack_number(_raw_curve25519(9, secret))
 
 
 class X25519PublicKey:
-    def __init__(self, x):
+    def __init__(self, x: int) -> None:
         self.x = x
 
     @classmethod
-    def from_public_bytes(cls, data):
+    def from_public_bytes(cls, data: bytes) -> "X25519PublicKey":
         return cls(_unpack_number(data))
 
-    def public_bytes(self):
+    def public_bytes(self) -> bytes:
         return _pack_number(self.x)
 
 
 class X25519PrivateKey:
-    def __init__(self, a):
+    def __init__(self, a: int) -> None:
         self.a = a
 
     @classmethod
-    def from_private_bytes(cls, data):
+    def from_private_bytes(cls, data: bytes) -> "X25519PrivateKey":
         return cls(_fix_secret(_unpack_number(data)))
 
-    def private_bytes(self):
+    def private_bytes(self) -> bytes:
         return _pack_number(self.a)
 
-    def public_key(self):
+    def public_key(self) -> bytes:
         return _pack_number(_raw_curve25519(9, self.a))
 
-    def exchange(self, peer_public_key):
+    def exchange(self, peer_public_key: Union[X25519PublicKey, bytes]) -> bytes:
         if isinstance(peer_public_key, bytes):
             peer_public_key = X25519PublicKey.from_public_bytes(peer_public_key)
         return _pack_number(_raw_curve25519(peer_public_key.x, self.a))
