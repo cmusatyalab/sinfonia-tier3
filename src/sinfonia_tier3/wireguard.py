@@ -27,7 +27,6 @@ from pathlib import Path
 from secrets import token_bytes
 from typing import Any, TextIO
 
-import wgconfig
 from attrs import define, field
 
 from .curve25519 import X25519PrivateKey
@@ -155,24 +154,18 @@ class WireguardConfig:
 
     def write_wireguard_conf(self, filename: str | os.PathLike[str]) -> None:
         """Create wireguard tunnel configuration"""
-        wireguard_config = wgconfig.WGConfig(Path(filename).resolve())
+        allowed_ips = ", ".join(str(addr) for addr in self.allowed_ips)
+        Path(filename).write_text(
+            f"""\
+[Interface]
+PrivateKey = {self.private_key}
 
-        # [Interface]
-        wireguard_config.add_attr(None, "PrivateKey", self.private_key)
-
-        # [Peer]
-        peer_key = str(self.public_key)
-        wireguard_config.add_peer(peer_key)
-        wireguard_config.add_attr(
-            peer_key,
-            "AllowedIPs",
-            ", ".join(str(addr) for addr in self.allowed_ips),
+[Peer]
+PublicKey = {self.public_key}
+AllowedIPs = {allowed_ips}
+Endpoint = {self.endpoint_host}:{self.endpoint_port}
+"""
         )
-        wireguard_config.add_attr(
-            peer_key, "Endpoint", f"{self.endpoint_host}:{self.endpoint_port}"
-        )
-
-        wireguard_config.write_file()
 
     def dump_resolv_conf(self) -> str:
         name_servers = [f"nameserver {entry}" for entry in self.dns_servers]

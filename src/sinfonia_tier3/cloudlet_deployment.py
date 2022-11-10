@@ -24,7 +24,6 @@ from openapi_core.contrib.requests import (
 )
 from openapi_core.validation.response.validators import ResponseValidator
 from yarl import URL
-from zeroconf import Zeroconf
 
 from .key_cache import KeyCacheEntry
 from .wireguard import WireguardConfig, WireguardKey
@@ -71,13 +70,9 @@ def sinfonia_deploy(
     """Request a backend (re)deployment from the orchestrator"""
     deploy_base = tier1_url
     if zeroconf:
-        zc = Zeroconf()
-        info = zc.get_service_info(
-            "_sinfonia._tcp.local.", "cloudlet._sinfonia._tcp.local."
-        )
-        if info is not None:
-            addresses = info.parsed_addresses()
-            deploy_base = URL.build(scheme="http", host=addresses[0], port=info.port)
+        raise NotImplementedError("Zeroconf functionality is still unfinished")
+        # - perform MDNS lookup for "cloudlet._sinfonia._tcp.local."
+        # override tier1_url and pass original tier1_url as a request header
 
     deployment_keys = KeyCacheEntry.load(application_uuid)
     deployment_url = (
