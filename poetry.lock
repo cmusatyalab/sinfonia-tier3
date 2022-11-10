@@ -484,6 +484,18 @@ python-versions = ">=3.6.8"
 diagrams = ["jinja2", "railroad-diagrams"]
 
 [[package]]
+name = "pyroute2"
+version = "0.7.3"
+description = "Python Netlink library"
+category = "main"
+optional = false
+python-versions = "*"
+
+[package.dependencies]
+importlib-metadata = {version = "*", markers = "python_version < \"3.8\""}
+win-inet-pton = {version = "*", markers = "platform_system == \"Windows\""}
+
+[[package]]
 name = "pyrsistent"
 version = "0.19.2"
 description = "Persistent/Functional/Immutable data structures"
@@ -750,6 +762,14 @@ optional = false
 python-versions = ">=2.7"
 
 [[package]]
+name = "win-inet-pton"
+version = "1.1.0"
+description = "Native inet_pton and inet_ntop implementation for Python on Windows (with ctypes)."
+category = "main"
+optional = false
+python-versions = "*"
+
+[[package]]
 name = "xdg"
 version = "5.1.1"
 description = "Variables defined by the XDG Base Directory Specification"
@@ -797,7 +817,7 @@ testing = ["flake8 (<5)", "func-timeout", "jaraco.functools", "jaraco.itertools"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.7"
-content-hash = "a45c34e91232d096b0dcf584cbfb246c622e0d803e09a0eeb2e9b12aebbcdc81"
+content-hash = "011f65725aa112597bcc449beb310039e3d4a9980199e7003aa8ea40cfef5e83"
 
 [metadata.files]
 async-timeout = [
@@ -1101,6 +1121,10 @@ pyparsing = [
     {file = "pyparsing-3.0.9-py3-none-any.whl", hash = "sha256:5026bae9a10eeaefb61dab2f09052b9f4307d44aee4eda64b309723d8d206bbc"},
     {file = "pyparsing-3.0.9.tar.gz", hash = "sha256:2b020ecf7d21b687f219b71ecad3631f644a47f01403fa1d1036b0c6416d70fb"},
 ]
+pyroute2 = [
+    {file = "pyroute2-0.7.3-py3-none-any.whl", hash = "sha256:05050623a8155f28d7b19ccc2c38ae74b1e1aa22b64d9743851b3f125458b2f0"},
+    {file = "pyroute2-0.7.3.tar.gz", hash = "sha256:7041040db1c2d187fbccd151485b1244c41d758be821785847946370eb6bb706"},
+]
 pyrsistent = [
     {file = "pyrsistent-0.19.2-cp310-cp310-macosx_10_9_universal2.whl", hash = "sha256:d6982b5a0237e1b7d876b60265564648a69b14017f3b5f908c5be2de3f9abb7a"},
     {file = "pyrsistent-0.19.2-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:187d5730b0507d9285a96fca9716310d572e5464cadd19f22b63a6976254d77a"},
@@ -1271,6 +1295,10 @@ werkzeug = [
 wgconfig = [
     {file = "wgconfig-0.2.3-py3-none-any.whl", hash = "sha256:55f0e17194951d9f09a23a4afc4740b8ed9b86e1f5fd812b5ca20ce254a96b46"},
     {file = "wgconfig-0.2.3.tar.gz", hash = "sha256:9a6ad3652bf823aa8de138506498fb73f82059a3cdc5e10d55f515b54749fb0d"},
+]
+win-inet-pton = [
+    {file = "win_inet_pton-1.1.0-py2.py3-none-any.whl", hash = "sha256:eaf0193cbe7152ac313598a0da7313fb479f769343c0c16c5308f64887dc885b"},
+    {file = "win_inet_pton-1.1.0.tar.gz", hash = "sha256:dd03d942c0d3e2b1cf8bab511844546dfa5f74cb61b241699fa379ad707dea4f"},
 ]
 xdg = [
     {file = "xdg-5.1.1-py3-none-any.whl", hash = "sha256:865a7b56ed1d4cd2fce2ead1eddf97360843619757f473cd90b75f1817ca541d"},
