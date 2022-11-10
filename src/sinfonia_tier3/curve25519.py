@@ -77,12 +77,6 @@ def _const_time_swap(a: Point, b: Point, swap: bool) -> Tuple[Point, Point]:
 
 def _raw_curve25519(base: int, n: int) -> int:
     """Raise the point base to the power n"""
-    # RFC7748 section 5
-    # u-coordinates are ... encoded as an array of bytes ... When receiving
-    # such an array, implementations of X25519 MUST mask the most significant
-    # bit in the final byte.
-    base &= ~(128 << 8 * 31)
-
     zero = (1, 0)
     one = (base, 1)
     mP, m1P = zero, one
@@ -110,6 +104,15 @@ def _pack_number(n: int) -> bytes:
     return n.to_bytes(32, "little")
 
 
+def _fix_base_point(n: int) -> int:
+    # RFC7748 section 5
+    # u-coordinates are ... encoded as an array of bytes ... When receiving
+    # such an array, implementations of X25519 MUST mask the most significant
+    # bit in the final byte.
+    n &= ~(128 << 8 * 31)
+    return n
+
+
 def _fix_secret(n: int) -> int:
     """Mask a value to be an acceptable exponent"""
     n &= ~7
@@ -120,7 +123,7 @@ def _fix_secret(n: int) -> int:
 
 def curve25519(base_point_raw: bytes, secret_raw: bytes) -> bytes:
     """Raise the base point to a given power"""
-    base_point = _unpack_number(base_point_raw)
+    base_point = _fix_base_point(_unpack_number(base_point_raw))
     secret = _fix_secret(_unpack_number(secret_raw))
     return _pack_number(_raw_curve25519(base_point, secret))
 
@@ -137,7 +140,7 @@ class X25519PublicKey:
 
     @classmethod
     def from_public_bytes(cls, data: bytes) -> "X25519PublicKey":
-        return cls(_unpack_number(data))
+        return cls(_fix_base_point(_unpack_number(data)))
 
     def public_bytes(self) -> bytes:
         return _pack_number(self.x)
