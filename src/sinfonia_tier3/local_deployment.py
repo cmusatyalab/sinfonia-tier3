@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import os
 import subprocess
+import sys
 from contextlib import contextmanager
 from pathlib import Path
 from shutil import which
@@ -28,7 +29,6 @@ rm = which("rm")
 rmdir = which("rmdir")
 sudo = which("sudo")
 tee = which("tee")
-wg = which("wg") or which("echo")
 
 
 def unique_namespace_name(name: str) -> str:
@@ -100,7 +100,6 @@ def sinfonia_runapp(
 
         assert ip is not None
         assert sudo is not None
-        assert wg is not None
 
         NS = unique_namespace_name(deployment_name)
         WG = f"wg-{NS}"[:15]
@@ -108,26 +107,30 @@ def sinfonia_runapp(
         with network_namespace(NS, resolv_conf) as netns_exec:
             uid, gid = os.getuid(), os.getgid()
 
+            # create, configure and attach WireGuard interface
             subprocess.run(
-                [sudo, ip, "link", "add", WG, "type", "wireguard"], check=True
+                [
+                    sudo,
+                    sys.executable,
+                    "-m",
+                    "sinfonia_tier3.root_helper",
+                    WG,
+                    NS,
+                    str(wireguard_conf.resolve()),
+                ],
+                check=True,
             )
-            subprocess.run([sudo, ip, "link", "set", WG, "netns", NS], check=True)
 
             # ip_addr_add = "\n".join(f"ip addr add {address] dev {WG}"
             #                         for address in tunnel_config.addresses)
             """
             set -e
-            wg setconf {WG} {tmpdir}/wg.conf
             {ip_addr_add}
             ip link set {WG} up
             ip route add default dev {WG}
             export PS1="sinfonia$ "
             sudo -E -u #{uid} -g #{gid} {*application}
             """
-
-            subprocess.run(
-                netns_exec + [wg, "setconf", WG, f"{tmpdir}/wg.conf"], check=True
-            )
             for address in tunnel_config.addresses:
                 subprocess.run(
                     netns_exec + [ip, "addr", "add", str(address), "dev", WG],
