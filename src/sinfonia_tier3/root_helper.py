@@ -12,7 +12,9 @@ from __future__ import annotations
 
 import argparse
 import sys
+from contextlib import contextmanager
 from pathlib import Path
+from typing import Iterator
 
 from pyroute2 import IPRoute, WireGuard
 
@@ -25,6 +27,16 @@ from .wireguard import WireguardConfig
 # - Set wireguard tunnel/peer configuration.
 # - Attach wireguard interface to network namespace.
 #
+
+
+@contextmanager
+def network_namespace(netns: str) -> Iterator[str | int]:
+    try:
+        pid = int(netns)
+        with Path("/proc/", str(pid), "ns", "net").open("r") as ns:
+            yield ns.fileno()
+    except ValueError:
+        yield netns
 
 
 def create_config_attach(interface: str, config: WireguardConfig, netns: str) -> None:
@@ -51,11 +63,8 @@ def create_config_attach(interface: str, config: WireguardConfig, netns: str) ->
         )
 
         # ip set dev <interface> netns <netns>
-        try:
-            with Path("/proc/", str(int(netns)), "ns", "net").open("r") as ns:
-                ipr.link("set", index=iface["index"], net_ns_fd=ns.fileno())
-        except ValueError:
-            ipr.link("set", index=iface["index"], net_ns_fd=netns)
+        with network_namespace(netns) as net_ns_fd:
+            ipr.link("set", index=iface["index"], net_ns_fd=net_ns_fd)
 
 
 def main() -> int:

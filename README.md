@@ -14,13 +14,7 @@ command-line application, and as a Python library.
 
 ## Installation
 
-This should be installable with `pip install sinfonia-tier3`, you will
-additionally need a couple of binary packages to set up the network namespace
-and wireguard tunnel to connect the frontend and the deployed backend.
-
-    - sudo
-    - iproute2
-    - wireguard-tools
+This should be installable with `pip install sinfonia-tier3`.
 
 
 ## Usage
@@ -67,3 +61,19 @@ And then use poetry to install the necessary dependencies,
     ... or
     $ poetry shell
     (env)$ sinfonia-tier3 ...
+
+
+## Why does we need a sudo password when deploying
+
+We need root access to create and configure a Wireguard tunnel endpoint that
+connects the local application's network namespace/container to the deployed
+backend. All of the code running as root is contained in
+[src/sinfonia_tier3/root_helper.py](https://github.com/cmusatyalab/sinfonia-tier3/blob/main/src/sinfonia_tier3/root_helper.py)
+
+Right now it runs the equivalent of,
+
+```sh
+ip link add wg-tunnel type wireguard
+wg set wg-tunnel private-key <private-key> peer <public-key> endpoint ...
+ip link set dev wg-tunnel netns <application network namespace>
+```
