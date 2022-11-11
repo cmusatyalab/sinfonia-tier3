@@ -10,25 +10,16 @@
 
 from __future__ import annotations
 
-import os
 import subprocess
 import sys
-from contextlib import contextmanager
+from itertools import chain
 from pathlib import Path
 from shutil import which
 from tempfile import TemporaryDirectory
-from typing import Iterator
 
 import randomname
 
 from .wireguard import WireguardConfig
-
-ip = which("ip")
-mkdir = which("mkdir")
-rm = which("rm")
-rmdir = which("rmdir")
-sudo = which("sudo")
-tee = which("tee")
 
 
 def unique_namespace_name(name: str) -> str:
@@ -42,39 +33,6 @@ def unique_namespace_name(name: str) -> str:
     return "".join(c for c in name.lower() if c.islower()) or randomname.get_name(
         sep=""
     )
-
-
-@contextmanager
-def network_namespace(namespace: str, resolv_conf: Path) -> Iterator[list[str]]:
-    assert ip is not None
-    assert mkdir is not None
-    assert rm is not None
-    assert rmdir is not None
-    assert sudo is not None
-    assert tee is not None
-
-    try:
-        # ip netns wants the resolv.conf replacement in a specific location
-        resolvconf = Path("/etc", "netns", namespace, "resolv.conf")
-        resolvconf_config = resolv_conf.read_text()
-
-        subprocess.run([sudo, mkdir, "-p", str(resolvconf.parent)], check=True)
-        subprocess.run(
-            [sudo, tee, str(resolvconf)],
-            input=resolvconf_config,
-            stdout=subprocess.DEVNULL,
-            encoding="utf-8",
-            check=True,
-        )
-
-        # now we can create the network namespace
-        subprocess.run([sudo, ip, "netns", "add", namespace], check=True)
-        yield [sudo, "-E", ip, "netns", "exec", namespace]
-
-    finally:
-        subprocess.run([sudo, ip, "netns", "delete", namespace])
-        subprocess.run([sudo, rm, "-f", str(resolvconf)])
-        subprocess.run([sudo, rmdir, str(resolvconf.parent)])
 
 
 def sinfonia_runapp(
@@ -98,14 +56,40 @@ def sinfonia_runapp(
         if config_debug:
             return 0
 
-        assert ip is not None
+        sudo = which("sudo")
+        unshare = which("unshare")
         assert sudo is not None
+        assert unshare is not None
 
         NS = unique_namespace_name(deployment_name)
         WG = f"wg-{NS}"[:15]
 
-        with network_namespace(NS, resolv_conf) as netns_exec:
-            uid, gid = os.getuid(), os.getgid()
+        # Running two processes pretty much in parallel here, the first one
+        # creates a new network namespace and then waits for the wireguard
+        # interface.
+        # The second process runs as root and creates and configures the
+        # wireguard interface and attaches it to the new network namespace.
+        with subprocess.Popen(
+            [
+                unshare,
+                "--user",
+                "--map-root-user",
+                "--net",
+                "--mount",
+                sys.executable,
+                "-m",
+                "sinfonia_tier3.netns_helper",
+                "--resolvconf",
+                str(resolv_conf.resolve()),
+            ]
+            + list(
+                chain.from_iterable(
+                    ("--address", str(address)) for address in tunnel_config.addresses
+                )
+            )
+            + [WG]
+            + application
+        ) as netns_proc:
 
             # create, configure and attach WireGuard interface
             subprocess.run(
@@ -115,38 +99,10 @@ def sinfonia_runapp(
                     "-m",
                     "sinfonia_tier3.root_helper",
                     WG,
-                    NS,
+                    str(netns_proc.pid),
                     str(wireguard_conf.resolve()),
                 ],
                 check=True,
             )
-
-            # ip_addr_add = "\n".join(f"ip addr add {address] dev {WG}"
-            #                         for address in tunnel_config.addresses)
-            """
-            set -e
-            {ip_addr_add}
-            ip link set {WG} up
-            ip route add default dev {WG}
-            export PS1="sinfonia$ "
-            sudo -E -u #{uid} -g #{gid} {*application}
-            """
-            for address in tunnel_config.addresses:
-                subprocess.run(
-                    netns_exec + [ip, "addr", "add", str(address), "dev", WG],
-                    check=True,
-                )
-            subprocess.run(netns_exec + [ip, "link", "set", WG, "up"], check=True)
-            subprocess.run(
-                netns_exec + [ip, "route", "add", "default", "dev", WG], check=True
-            )
-
-            env = os.environ.copy()
-            env["PS1"] = "sinfonia$ "
-            subprocess.run(
-                netns_exec
-                + ["sudo", "-E", "-u", f"#{uid}", "-g", f"#{gid}"]
-                + application,
-                env=env,
-            )
+            # leaving the context will wait for the application to exit
     return 0
