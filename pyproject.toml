@@ -36,7 +36,6 @@ yarl = "^1.7.2"
 
 [tool.poetry.scripts]
 sinfonia-tier3 = "sinfonia_tier3.cli:main"
-sinfonia-asroot = "sinfonia_tier3.root_helper:main"
 
 [tool.poetry.group.dev.dependencies]
 black = "^22.10.0"
