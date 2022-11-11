@@ -18,6 +18,7 @@ from typing import Iterator
 
 from pyroute2 import IPRoute, WireGuard
 
+from . import __version__
 from .wireguard import WireguardConfig
 
 #
@@ -69,6 +70,9 @@ def create_config_attach(interface: str, config: WireguardConfig, netns: str) ->
 
 def main() -> int:
     parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--version", action="version", version=f"%(prog)s {__version__}"
+    )
     parser.add_argument("interface")
     parser.add_argument("netns")
     parser.add_argument(

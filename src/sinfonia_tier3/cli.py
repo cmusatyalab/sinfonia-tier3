@@ -16,6 +16,7 @@ from uuid import UUID
 from requests.exceptions import HTTPError
 from yarl import URL
 
+from . import __version__
 from .cloudlet_deployment import sinfonia_deploy
 from .local_deployment import sinfonia_runapp
 
@@ -39,6 +40,9 @@ def parse_args(args: list[str] | None = None) -> argparse.Namespace:
     )
     parser.add_argument(
         "--debug", action="store_true", help="Extra logging for debugging"
+    )
+    parser.add_argument(
+        "--version", action="version", version=f"%(prog)s {__version__}"
     )
     parser.add_argument(
         "--zeroconf",

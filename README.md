@@ -3,29 +3,37 @@
 Manages discovery of nearby cloudlets and deployment of backends for
 edge-native applications.
 
-Tier 1 is located in the cloud and it tracks availability of Tier 2 instances
-at various cloudlets where backends can be deployed. Tier 3 is the client
-application that mediates the discovery and deployment process for edge-native
+The framework is a 3 tiered system. Tier 1 is located in the cloud and tracks
+availability of the Tier 2 instances running on the edge of the network
+(cloudlets) where backends can be deployed. Tier 3 is the client application
+that mediates the discovery and deployment process for edge-native
 applications.
 
 This repository implements an example Tier3 client which can be used both as a
-command-line application, and as a Python library.
+command-line application and as a Python library.
 
 
 ## Installation
 
-This should be installable with `pip install sinfonia-tier3`.
+You probably don't need to install this directly, most of the time it should
+get installed as a dependency of whichever edge-native application is using
+the Sinfonia framework to discover nearby cloudlets.
+
+But if you want to run the standalone command-line application, you can install
+this with installable with `pipx install sinfonia-tier3` or
+`pip install [--user] sinfonia-tier3`.
 
 
 ## Usage
 
-The `sinfonia-tier3` application would normally be called by an edge-native
-application to start an application specific backend on a nearby cloudlet.
+The `sinfonia-tier3` application would normally be called by any edge-native
+application that uses the Sinfonia framework to deploy its application specific
+backend on a nearby cloudlet.
 
-The information normally provided by the app are the URL of a Tier1 instance
-and the UUID identifying the needed backend. Finally the actual frontend
-application and arguments that will be launched once the backend deployment has
-started.
+The information needed by the application are the URL of a Tier1 instance
+and the UUID identifying the required backend. The remainder of the arguments
+consist of the actual frontend application and arguments that will be launched
+in an seperate network namespace connecting back to the deployed backend.
 
     $ sinfonia-tier3 <tier1-url> <uuid> <frontend-app> <args...>
 
@@ -38,9 +46,9 @@ with the hostname 'helloworld'.
     ...
     sinfonia$ exit
 
-When the frontend application exits, the network namespace and wireguard tunnel
-are cleaned up. Any resources on the cloudlet are automatically released once
-Tier2 notices the VPN tunnel has gone idle for some time
+When the frontend application exits, the network namespace and WireGuard tunnel
+are cleaned up. Any resources on the cloudlet will be automatically released
+once the Sinfonia-tier2 instance notices the VPN tunnel has been idle.
 
 
 ## Installation from this source repository
@@ -63,14 +71,14 @@ And then use poetry to install the necessary dependencies,
     (env)$ sinfonia-tier3 ...
 
 
-## Why does we need a sudo password when deploying
+## Why do we need a sudo password when deploying
 
-We need root access to create and configure a Wireguard tunnel endpoint that
+We need root access to create and configure the WireGuard tunnel endpoint that
 connects the local application's network namespace/container to the deployed
 backend. All of the code running as root is contained in
 [src/sinfonia_tier3/root_helper.py](https://github.com/cmusatyalab/sinfonia-tier3/blob/main/src/sinfonia_tier3/root_helper.py)
 
-Right now it runs the equivalent of,
+It runs the equivalent of the following.
 
 ```sh
 ip link add wg-tunnel type wireguard

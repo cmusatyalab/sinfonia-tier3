@@ -41,19 +41,23 @@ def bump_current_version(c, part):
 
 
 @task
-def build_release(c, part="patch"):
-    """Bump application version, build test release and add a signed tag"""
+def publish_release(c, part="patch"):
+    """Bump application version, build, tag, publish and bump to dev tag"""
+    # bump source version for next release
     release = bump_current_version(c, part)
     c.run(f"poetry run tbump --no-tag --no-push {release}")
+
+    # build and tag source
     c.run("poetry build")
     c.run(f"git tag -m v{release} v{release}")
 
+    # publish
+    c.run("poetry publish")
 
-@task
-def publish(c):
-    """Publish application, bump version to dev and push release tags"""
-    c.run("poetry publish --build")
+    # bump source version to new development tag
     new_version = get_current_version(c) + ".post.dev0"
-    c.run(f"poetry run tbump --no-tag --no-push {new_version}")
+    c.run(f"poetry run tbump --non-interactive --no-tag --no-push {new_version}")
+
+    # update source and tags in github
     c.run("git push")
     c.run("git push --tags")
