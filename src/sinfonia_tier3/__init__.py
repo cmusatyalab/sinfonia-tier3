@@ -10,6 +10,6 @@
 
 from .cli import sinfonia_tier3
 
-__version__ = "0.3.0.post.dev0"
+__version__ = "0.3.1"
 
 __all__ = ["sinfonia_tier3"]
