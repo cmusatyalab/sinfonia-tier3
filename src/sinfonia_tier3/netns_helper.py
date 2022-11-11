@@ -18,7 +18,7 @@ from ipaddress import IPv4Interface, IPv6Interface, ip_interface
 from pathlib import Path
 from shutil import which
 
-from pyroute2 import IPRoute
+from pyroute2 import NDB
 
 #
 # Things we do in the network namespace
@@ -43,24 +43,18 @@ def bind_mount(resolvconf: Path) -> None:
 def finish_network_config(
     interface: str, addresses: list[IPv4Interface | IPv6Interface]
 ) -> None:
-    with IPRoute() as ipr:
-        # wait for interface to be created and attached to our namespace
-        (iface,) = ipr.poll(ipr.link, "dump", timeout=5, ifname=interface)
+    with NDB() as ndb:
+        with ndb.interfaces.wait(ifname=interface) as wg:
+            # ip link set <interface> up
+            wg.set(state="up")
 
-        # ip link set <interface> up
-        ipr.link("set", index=iface["index"], state="up")
+            # ip addr add <address> dev <interface>
+            for address in addresses:
+                wg.add_ip(str(address))
 
-        # ip addr add <address> dev <interface>
-        for address in addresses:
-            ipr.addr(
-                "add",
-                index=iface["index"],
-                address=str(address.ip),
-                mask=address.network.prefixlen,
-            )
-
-        # ip route add default dev <interface>
-        ipr.route("add", dst="default", oif=iface["index"])
+        with ndb.interfaces[interface] as wg:
+            # ip route add default dev <interface>
+            ndb.routes.create(dst="default", oif=wg["index"]).commit()
 
 
 def main() -> int:
