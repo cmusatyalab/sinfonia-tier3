@@ -32,7 +32,10 @@ def get_current_version(c):
 def bump_current_version(c, part):
     """Simplistic version bumping."""
     current_version = get_current_version(c)
-    major, minor, patch = re.match(r"(\d+)\.(\d+)\.(\d+)", current_version).groups()
+    match = re.match(r"(\d+)\.(\d+)\.(\d+)", current_version)
+    assert match is not None
+
+    major, minor, patch = match.groups()
     if part == "major":
         return f"{int(major)+1}.0.0"
     if part == "minor":
