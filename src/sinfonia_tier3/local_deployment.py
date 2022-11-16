@@ -76,6 +76,7 @@ def sinfonia_runapp(
                 "--map-root-user",
                 "--net",
                 "--mount",
+                "--",
                 sys.executable,
                 "-m",
                 "sinfonia_tier3.netns_helper",

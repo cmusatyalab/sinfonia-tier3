@@ -78,7 +78,7 @@ def main() -> int:
     )
     parser.add_argument(
         "application",
-        nargs="+",
+        nargs=argparse.REMAINDER,
     )
     args = parser.parse_args()
 

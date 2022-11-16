@@ -51,12 +51,12 @@ def parse_args(args: list[str] | None = None) -> argparse.Namespace:
     )
     parser.add_argument("tier1_url", metavar="tier1-url", type=URL)
     parser.add_argument("application_uuid", metavar="application-uuid", type=app_uuid)
-    parser.add_argument("application", nargs="+")
+    parser.add_argument("application", nargs=argparse.REMAINDER)
     return parser.parse_args(args)
 
 
 def sinfonia_tier3(
-    tier1_url: URL,
+    tier1_url: URL | str,
     application_uuid: UUID,
     application: list[str],
     config_debug: bool = False,
@@ -66,7 +66,7 @@ def sinfonia_tier3(
     # Request one or more backend deployments
     try:
         print("Deploying... ", end="", flush=True)
-        deployments = sinfonia_deploy(tier1_url, application_uuid, debug, zeroconf)
+        deployments = sinfonia_deploy(URL(tier1_url), application_uuid, debug, zeroconf)
         print("done")
     except ConnectionError:
         print("failed to connect to sinfonia-tier1/-tier2")
