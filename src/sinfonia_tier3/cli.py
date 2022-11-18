@@ -11,6 +11,7 @@
 from __future__ import annotations
 
 import argparse
+from typing import Sequence
 from uuid import UUID
 
 from requests.exceptions import HTTPError
@@ -58,7 +59,7 @@ def parse_args(args: list[str] | None = None) -> argparse.Namespace:
 def sinfonia_tier3(
     tier1_url: URL | str,
     application_uuid: UUID,
-    *application: str,
+    application: Sequence[str],
     config_debug: bool = False,
     debug: bool = False,
     zeroconf: bool = False,
@@ -91,7 +92,7 @@ def main() -> int:
     return sinfonia_tier3(
         args.tier1_url,
         args.application_uuid,
-        *args.application,
+        args.application,
         config_debug=args.config_debug,
         debug=args.debug,
         zeroconf=args.zeroconf,
