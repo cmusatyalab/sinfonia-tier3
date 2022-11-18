@@ -59,7 +59,9 @@ def publish_release(c, part="patch"):
 
     # bump source version to new development tag
     new_version = get_current_version(c) + ".post.dev0"
-    c.run(f"poetry run tbump --non-interactive --no-tag --no-push {new_version}")
+    c.run(f"poetry run tbump --non-interactive --only-patch {new_version}")
+    c.run("git add --update")
+    c.run(f'git commit --no-verify --message "Bumping to {new_version}"')
 
     # update source and tags in github
     c.run("git push")
