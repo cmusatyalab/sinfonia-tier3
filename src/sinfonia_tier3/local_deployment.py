@@ -16,6 +16,7 @@ from itertools import chain
 from pathlib import Path
 from shutil import which
 from tempfile import TemporaryDirectory
+from typing import Sequence
 
 import randomname
 
@@ -38,7 +39,7 @@ def unique_namespace_name(name: str) -> str:
 def sinfonia_runapp(
     deployment_name: str,
     tunnel_config: WireguardConfig,
-    application: list[str],
+    application: Sequence[str],
     config_debug: bool = False,
 ) -> int:
     """Run applicaiton in an isolated network namespace with wireguard tunnel"""
@@ -89,7 +90,7 @@ def sinfonia_runapp(
                 )
             )
             + [WG]
-            + application
+            + list(application)
         ) as netns_proc:
 
             # create, configure and attach WireGuard interface

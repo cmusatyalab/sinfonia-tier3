@@ -41,10 +41,15 @@ sinfonia-tier3 = "sinfonia_tier3.cli:main"
 black = "^22.10.0"
 invoke = "^1.7.3"
 pre-commit = "^2.16.0"
+tbump = "^6.9.0"
+
+[tool.poetry.group.test.dependencies]
+mypy = "^0.991"
 pytest = "^6.2.5"
 pytest-mock = "^3.6.1"
 requests-mock = "^1.9.3"
-tbump = "^6.9.0"
+types-pyyaml = "^6.0.12.2"
+types-requests = "^2.28.11.5"
 
 [tool.black]
 target-version = ["py37"]
