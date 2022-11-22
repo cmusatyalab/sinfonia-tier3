@@ -68,7 +68,7 @@ def sinfonia_runapp(
     application: Sequence[str],
     config_debug: bool = False,
 ) -> int:
-    """Run applicaiton in an isolated network namespace with wireguard tunnel"""
+    """Run application in an isolated network namespace with wireguard tunnel"""
     with TemporaryDirectory() as temporary_directory:
         if config_debug:
             temporary_directory = "."
