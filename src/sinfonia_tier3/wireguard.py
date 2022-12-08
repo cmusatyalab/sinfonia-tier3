@@ -13,7 +13,7 @@ Validate and convert between standard and urlsafe encodings.
 from __future__ import annotations
 
 from base64 import standard_b64encode, urlsafe_b64decode, urlsafe_b64encode
-from configparser import ConfigParser, SectionProxy
+from configparser import ConfigParser
 from ipaddress import (
     IPv4Address,
     IPv4Interface,
@@ -106,28 +106,38 @@ class WireguardConfig:
         config = ConfigParser()
         config.read_file(config_file)
 
-        private_key = WireguardKey(config["Interface"]["PrivateKey"])
-        return cls.from_dict(private_key, config["Peer"])
+        config_dict = dict(
+            privateKey=config["Interface"]["PrivateKey"],
+            publicKey=config["Peer"]["PublicKey"],
+            endpoint=config["Peer"]["Endpoint"],
+            allowedIPs=[
+                address.strip() for address in config["Peer"]["AllowedIPs"].split(",")
+            ],
+        )
+        if "Address" in config["Interface"]:
+            config_dict["address"] = [
+                address.strip() for address in config["Interface"]["Address"].split(",")
+            ]
+        if "DNS" in config["Interface"]:
+            config_dict["dns"] = [
+                item.strip() for item in config["Interface"]["DNS"].split(",")
+            ]
+
+        return cls.from_dict(config_dict)
 
     @classmethod
     def from_dict(
-        cls, private_key: WireguardKey, config: dict[str, Any] | SectionProxy
+        cls, config: dict[str, Any], private_key: WireguardKey | None = None
     ) -> WireguardConfig:
-        if "address" in config:
-            addresses = [ip_interface(addr) for addr in config["address"]]
-        else:
-            addresses = []
+        if private_key is None:
+            private_key = WireguardKey(config["privateKey"])
 
-        if "dns" in config:
-            dns_servers = [
-                ip_address(value) for value in config["dns"] if is_ipaddress(value)
-            ]
-            search_domains = [
-                value for value in config["dns"] if not is_ipaddress(value)
-            ]
-        else:
-            dns_servers = []
-            search_domains = []
+        address_opt: list[str] = config.get("address", [])
+        addresses = [ip_interface(addr) for addr in address_opt]
+
+        dns_opt: list[str] = config.get("dns", [])
+        dns_servers = [ip_address(value) for value in dns_opt if is_ipaddress(value)]
+        search_domains = [value for value in dns_opt if not is_ipaddress(value)]
 
         public_key = WireguardKey(config["publicKey"])
 
@@ -137,9 +147,7 @@ class WireguardConfig:
         )
         endpoint_port = int(endpoint_port)
 
-        allowedips_opt: list[str] | str = config["allowedIPs"]
-        if isinstance(allowedips_opt, str):
-            allowedips_opt = [address.strip() for address in allowedips_opt.split(",")]
+        allowedips_opt: list[str] = config["allowedIPs"]
         allowed_ips = [ip_interface(addr) for addr in allowedips_opt]
 
         return cls(
@@ -153,19 +161,35 @@ class WireguardConfig:
             allowed_ips,
         )
 
-    def wireguard_conf(self) -> str:
+    def wireguard_conf(self, wgquick: bool = False) -> str:
         """Create wireguard tunnel configuration"""
         allowed_ips = ", ".join(str(addr) for addr in self.allowed_ips)
         config = [
             "[Interface]",
             f"PrivateKey = {self.private_key}",
-            "",
-            "[Peer]",
-            f"PublicKey = {self.public_key}",
-            f"AllowedIPs = {allowed_ips}",
-            f"Endpoint = {self.endpoint_host}:{self.endpoint_port}",
-            "",
         ]
+
+        if wgquick:
+            if self.addresses:
+                addresses = ", ".join(str(addr) for addr in self.addresses)
+                config.append(f"Address = {addresses}")
+
+            if self.dns_servers or self.search_domains:
+                dns = ", ".join(
+                    str(item) for item in self.dns_servers + self.search_domains
+                )
+                config.append(f"DNS = {dns}")
+
+        config.extend(
+            [
+                "",
+                "[Peer]",
+                f"PublicKey = {self.public_key}",
+                f"AllowedIPs = {allowed_ips}",
+                f"Endpoint = {self.endpoint_host}:{self.endpoint_port}",
+                "",
+            ]
+        )
         return "\n".join(config)
 
     def uapi_conf(self) -> str:
@@ -188,6 +212,10 @@ class WireguardConfig:
         if self.search_domains:
             search_domains = " ".join(entry for entry in self.search_domains)
             config.append(f"search {search_domains}")
-        config.append("options ndots:5")
-        config.append("")
+        config.extend(
+            [
+                "options ndots:5",
+                "",
+            ]
+        )
         return "\n".join(config)

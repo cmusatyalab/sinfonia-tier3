@@ -46,7 +46,7 @@ class CloudletDeployment:
             resp["UUID"],
             resp["ApplicationKey"],
             resp["Status"],
-            WireguardConfig.from_dict(private_key, resp["TunnelConfig"]),
+            WireguardConfig.from_dict(resp["TunnelConfig"], private_key=private_key),
             resp.get("DeploymentName", ""),
             resp.get("Created"),
         )
