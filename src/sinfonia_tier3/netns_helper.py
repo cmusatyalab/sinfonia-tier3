@@ -26,9 +26,10 @@ from . import __version__
 # Things we do in the network namespace
 #
 # - Bind mount /etc/resolv.conf
+# - Bring up the loopback interface.
 # - Wait for wireguard interface to appear in our namespace.
-# - Configure ip addresses on the wireguard interface.
 # - Bring the wireguard interface up.
+# - Configure ip addresses on the wireguard interface.
 # - Add default route through the wireguard interface.
 # - Launch application.
 #
@@ -42,10 +43,13 @@ def bind_mount(resolvconf: Path) -> None:
     )
 
 
-def finish_network_config(
+def configure_network(
     interface: str, addresses: list[IPv4Interface | IPv6Interface]
 ) -> None:
     with NDB() as ndb:
+        with ndb.interfaces["lo"] as loopback:
+            loopback.set(state="up")
+
         with ndb.interfaces.wait(ifname=interface) as wg:
             # ip link set <interface> up
             wg.set(state="up")
@@ -85,7 +89,7 @@ def main() -> int:
     if args.resolvconf is not None:
         bind_mount(args.resolvconf)
 
-    finish_network_config(args.interface, args.address)
+    configure_network(args.interface, args.address)
 
     # Run application
     env = os.environ.copy()
