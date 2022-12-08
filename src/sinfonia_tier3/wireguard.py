@@ -75,6 +75,9 @@ class WireguardKey:
     def urlsafe(self) -> str:
         return urlsafe_b64encode(self.keydata).decode("utf-8").rstrip("=")
 
+    def hex(self) -> str:
+        return self.keydata.hex()
+
 
 def is_ipaddress(value: str) -> bool:
     try:
@@ -163,6 +166,21 @@ class WireguardConfig:
             f"Endpoint = {self.endpoint_host}:{self.endpoint_port}",
             "",
         ]
+        return "\n".join(config)
+
+    def uapi_conf(self) -> str:
+        config = [
+            "set=1",
+            f"private_key={self.private_key.hex()}",
+            "replace_peers=true",
+            f"public_key={self.public_key.hex()}",
+            f"endpoint={self.endpoint_host}:{self.endpoint_port}",
+            "persistent_keepalive_interval=30",
+            "replace_allowed_ips=true",
+        ]
+        for address in self.allowed_ips:
+            config.append(f"allowed_ip={address}")
+        config.append("")
         return "\n".join(config)
 
     def resolv_conf(self) -> str:
