@@ -49,10 +49,10 @@ def sinfonia_runapp(
         tmpdir = Path(temporary_directory)
 
         wireguard_conf = tmpdir / "wg.conf"
-        tunnel_config.write_wireguard_conf(wireguard_conf)
+        wireguard_conf.write_text(tunnel_config.wireguard_conf())
 
         resolv_conf = tmpdir / "resolv.conf"
-        tunnel_config.write_resolv_conf(resolv_conf)
+        resolv_conf.write_text(tunnel_config.resolv_conf())
 
         if config_debug:
             return 0
@@ -100,8 +100,8 @@ def sinfonia_runapp(
                     sys.executable,
                     "-m",
                     "sinfonia_tier3.root_helper",
-                    WG,
                     str(netns_proc.pid),
+                    WG,
                     str(wireguard_conf.resolve()),
                 ],
                 check=True,

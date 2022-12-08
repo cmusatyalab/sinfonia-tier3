@@ -73,8 +73,8 @@ def main() -> int:
     parser.add_argument(
         "--version", action="version", version=f"%(prog)s {__version__}"
     )
-    parser.add_argument("interface")
     parser.add_argument("netns")
+    parser.add_argument("interface")
     parser.add_argument(
         "config",
         metavar="wireguard.conf",

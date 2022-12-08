@@ -12,7 +12,6 @@ Validate and convert between standard and urlsafe encodings.
 
 from __future__ import annotations
 
-import os
 from base64 import standard_b64encode, urlsafe_b64decode, urlsafe_b64encode
 from configparser import ConfigParser, SectionProxy
 from ipaddress import (
@@ -23,7 +22,6 @@ from ipaddress import (
     ip_address,
     ip_interface,
 )
-from pathlib import Path
 from secrets import token_bytes
 from typing import Any, TextIO
 
@@ -152,30 +150,26 @@ class WireguardConfig:
             allowed_ips,
         )
 
-    def write_wireguard_conf(self, filename: str | os.PathLike[str]) -> None:
+    def wireguard_conf(self) -> str:
         """Create wireguard tunnel configuration"""
         allowed_ips = ", ".join(str(addr) for addr in self.allowed_ips)
-        Path(filename).write_text(
-            f"""\
-[Interface]
-PrivateKey = {self.private_key}
+        config = [
+            "[Interface]",
+            f"PrivateKey = {self.private_key}",
+            "",
+            "[Peer]",
+            f"PublicKey = {self.public_key}",
+            f"AllowedIPs = {allowed_ips}",
+            f"Endpoint = {self.endpoint_host}:{self.endpoint_port}",
+            "",
+        ]
+        return "\n".join(config)
 
-[Peer]
-PublicKey = {self.public_key}
-AllowedIPs = {allowed_ips}
-Endpoint = {self.endpoint_host}:{self.endpoint_port}
-"""
-        )
-
-    def dump_resolv_conf(self) -> str:
-        name_servers = [f"nameserver {entry}" for entry in self.dns_servers]
-        search_domains = [entry for entry in self.search_domains]
-
-        resolvconf_config = "\n".join(name_servers)
-        if search_domains:
-            resolvconf_config += " ".join(["\nsearch"] + search_domains)
-        resolvconf_config += "\noptions ndots:5"
-        return resolvconf_config
-
-    def write_resolv_conf(self, filename: str | os.PathLike[str]) -> None:
-        Path(filename).write_text(self.dump_resolv_conf())
+    def resolv_conf(self) -> str:
+        config = [f"nameserver {entry}" for entry in self.dns_servers]
+        if self.search_domains:
+            search_domains = " ".join(entry for entry in self.search_domains)
+            config.append(f"search {search_domains}")
+        config.append("options ndots:5")
+        config.append("")
+        return "\n".join(config)
