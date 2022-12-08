@@ -36,6 +36,28 @@ def unique_namespace_name(name: str) -> str:
     )
 
 
+def sudo_create_wireguard_tunnel(
+    netns_pid: int, interface: str, wg_config: Path
+) -> None:
+    """Try to bring up wireguard tunnel with sudo sinfonia_tier3.root_helper"""
+    sudo = which("sudo")
+    assert sudo is not None
+
+    # create, configure and attach WireGuard interface
+    subprocess.run(
+        [
+            sudo,
+            sys.executable,
+            "-m",
+            "sinfonia_tier3.root_helper",
+            str(netns_pid),
+            interface,
+            str(wg_config.resolve()),
+        ],
+        check=True,
+    )
+
+
 def sinfonia_runapp(
     deployment_name: str,
     tunnel_config: WireguardConfig,
@@ -57,9 +79,7 @@ def sinfonia_runapp(
         if config_debug:
             return 0
 
-        sudo = which("sudo")
         unshare = which("unshare")
-        assert sudo is not None
         assert unshare is not None
 
         NS = unique_namespace_name(deployment_name)
@@ -92,19 +112,10 @@ def sinfonia_runapp(
             + [WG]
             + list(application)
         ) as netns_proc:
-
-            # create, configure and attach WireGuard interface
-            subprocess.run(
-                [
-                    sudo,
-                    sys.executable,
-                    "-m",
-                    "sinfonia_tier3.root_helper",
-                    str(netns_proc.pid),
-                    WG,
-                    str(wireguard_conf.resolve()),
-                ],
-                check=True,
-            )
+            try:
+                sudo_create_wireguard_tunnel(netns_proc.pid, WG, wireguard_conf)
+            except (AssertionError, subprocess.CalledProcessError):
+                print("Failed to run sudo root helper")
+                netns_proc.kill()
             # leaving the context will wait for the application to exit
     return 0

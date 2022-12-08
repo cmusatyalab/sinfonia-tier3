@@ -40,7 +40,7 @@ def network_namespace(netns: str) -> Iterator[str | int]:
         yield netns
 
 
-def create_config_attach(interface: str, config: WireguardConfig, netns: str) -> None:
+def create_config_attach(interface: str, wgconfig: WireguardConfig, netns: str) -> None:
     with IPRoute() as ipr:
         # ip link add <interface> type wireguard
         ipr.link("add", ifname=interface, kind="wireguard")
@@ -53,12 +53,12 @@ def create_config_attach(interface: str, config: WireguardConfig, netns: str) ->
         wg = WireGuard()
         wg.set(
             interface,
-            private_key=str(config.private_key),
+            private_key=str(wgconfig.private_key),
             peer=dict(
-                public_key=str(config.public_key),
-                endpoint_addr=str(config.endpoint_host),
-                endpoint_port=config.endpoint_port,
-                allowed_ips=[str(address) for address in config.allowed_ips],
+                public_key=str(wgconfig.public_key),
+                endpoint_addr=str(wgconfig.endpoint_host),
+                endpoint_port=wgconfig.endpoint_port,
+                allowed_ips=[str(address) for address in wgconfig.allowed_ips],
                 persistent_keepalive=30,
             ),
         )
@@ -76,16 +76,16 @@ def main() -> int:
     parser.add_argument("netns")
     parser.add_argument("interface")
     parser.add_argument(
-        "config",
+        "wgconfig",
         metavar="wireguard.conf",
         type=argparse.FileType("r"),
         default=sys.stdin,
     )
     args = parser.parse_args()
 
-    wg_config = WireguardConfig.from_conf_file(args.config)
+    wgconfig = WireguardConfig.from_conf_file(args.wgconfig)
 
-    create_config_attach(args.interface, wg_config, args.netns)
+    create_config_attach(args.interface, wgconfig, args.netns)
     return 0
 
 
