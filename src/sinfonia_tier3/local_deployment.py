@@ -20,6 +20,7 @@ from typing import Sequence
 
 import randomname
 
+from .rootless import create_wireguard_tunnel
 from .wireguard import WireguardConfig
 
 
@@ -37,11 +38,14 @@ def unique_namespace_name(name: str) -> str:
 
 
 def sudo_create_wireguard_tunnel(
-    netns_pid: int, interface: str, wg_config: Path
+    netns_pid: int, interface: str, wgconfig: WireguardConfig, tmpdir: Path
 ) -> None:
     """Try to bring up wireguard tunnel with sudo sinfonia_tier3.root_helper"""
     sudo = which("sudo")
     assert sudo is not None
+
+    wireguard_conf = tmpdir / "wg.conf"
+    wireguard_conf.write_text(wgconfig.wireguard_conf())
 
     # create, configure and attach WireGuard interface
     subprocess.run(
@@ -52,7 +56,7 @@ def sudo_create_wireguard_tunnel(
             "sinfonia_tier3.root_helper",
             str(netns_pid),
             interface,
-            str(wg_config.resolve()),
+            str(wireguard_conf.resolve()),
         ],
         check=True,
     )
@@ -69,9 +73,6 @@ def sinfonia_runapp(
         if config_debug:
             temporary_directory = "."
         tmpdir = Path(temporary_directory)
-
-        wireguard_conf = tmpdir / "wg.conf"
-        wireguard_conf.write_text(tunnel_config.wireguard_conf())
 
         resolv_conf = tmpdir / "resolv.conf"
         resolv_conf.write_text(tunnel_config.resolv_conf())
@@ -113,9 +114,15 @@ def sinfonia_runapp(
             + list(application)
         ) as netns_proc:
             try:
-                sudo_create_wireguard_tunnel(netns_proc.pid, WG, wireguard_conf)
-            except (AssertionError, subprocess.CalledProcessError):
-                print("Failed to run sudo root helper")
-                netns_proc.kill()
+                create_wireguard_tunnel(netns_proc.pid, WG, tunnel_config, tmpdir)
+            except (AssertionError, FileNotFoundError, subprocess.CalledProcessError):
+                print("Failed to run wireguard-go, falling back to sudo root helper")
+                try:
+                    sudo_create_wireguard_tunnel(
+                        netns_proc.pid, WG, tunnel_config, tmpdir
+                    )
+                except (AssertionError, subprocess.CalledProcessError):
+                    print("Failed to run sudo root helper")
+                    netns_proc.kill()
             # leaving the context will wait for the application to exit
     return 0

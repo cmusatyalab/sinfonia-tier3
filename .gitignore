@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: 0BSD
 
 /dist/
+/src/sinfonia_tier3/wireguard-go
 __pycache__/
 *~
 *.swp
