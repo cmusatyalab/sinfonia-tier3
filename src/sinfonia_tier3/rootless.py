@@ -15,24 +15,25 @@ import ctypes
 import ctypes.util
 import errno
 import fcntl
-import importlib_resources
 import os
-import socket
 import struct
 import subprocess
 import sys
 import time
-from contextlib import contextmanager
+from contextlib import contextmanager, closing
 from multiprocessing import Pipe, Process
 from multiprocessing.connection import Connection
 from multiprocessing.reduction import recv_handle, send_handle
 from pathlib import Path
-from typing import Iterator, Literal
+from typing import Iterator
 
+import importlib_resources
 from pyroute2 import NDB
+from typing_extensions import Literal
+from wireguard_tools import WireguardConfig
+from wireguard_tools.wireguard_device import WireguardUAPIDevice
 
 from . import __version__
-from .wireguard import WireguardConfig
 
 _libc = ctypes.CDLL(ctypes.util.find_library("c"), use_errno=True)
 
@@ -80,7 +81,7 @@ def create_tun_in_netns(target_ns_pid: int, tundev_name: str) -> int:
 @contextmanager
 def fork_wireguard_go(
     ns_pid: int, interface: str, tmpdir: Path
-) -> Iterator[socket.socket]:
+) -> Iterator[WireguardUAPIDevice]:
     tundev = create_tun_in_netns(ns_pid, interface)
 
     wireguard_go = importlib_resources.files("sinfonia_tier3").joinpath("wireguard-go")
@@ -105,36 +106,22 @@ def fork_wireguard_go(
     while not uapi_path.exists():
         time.sleep(0.1)
 
-    # connect to uapi socket
-    uapi_sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-    uapi_sock.connect(str(uapi_path.resolve()))
-
-    yield uapi_sock
-    uapi_sock.close()
+    with closing(WireguardUAPIDevice(uapi_path)) as device:
+        yield device
 
     # do we even care to wait for the child to exit?
     # no we don't, it will terminate when the device or tmpdir are cleaned up
 
 
 def create_wireguard_tunnel(
-    ns_pid: int, interface: str, wg_config: WireguardConfig, tmpdir: Path = Path()
+    ns_pid: int, interface: str, config: WireguardConfig, tmpdir: Path | None = None
 ) -> None:
-    with fork_wireguard_go(ns_pid, interface, tmpdir) as uapi_sock:
+    if tmpdir is None:
+        tmpdir = Path()
+    with fork_wireguard_go(ns_pid, interface, tmpdir) as device:
         # wg set <interface> private-key <...> peer <...> endpoint <...>
         #    persistent-keepalive <...> allowed-ips <...>
-        config = [
-            "set=1",
-            f"private_key={wg_config.private_key.hex()}",
-            "replace_peers=true",
-            f"public_key={wg_config.public_key.hex()}",
-            f"endpoint={wg_config.endpoint_host}:{wg_config.endpoint_port}",
-            "persistent_keepalive_interval=30",
-            "replace_allowed_ips=true",
-        ]
-        for address in wg_config.allowed_ips:
-            config.append(f"allowed_ip={address}")
-        config.append("")
-        uapi_sock.sendall("\n".join(config).encode())
+        device.set_config(config)
 
 
 def main() -> int:
@@ -148,8 +135,8 @@ def main() -> int:
     parser.add_argument("config", metavar="wireguard.conf", type=argparse.FileType("r"))
     args = parser.parse_args()
 
-    wg_config = WireguardConfig.from_conf_file(args.config)
-    create_wireguard_tunnel(args.ns_pid, args.interface, wg_config, args.tmpdir)
+    config = WireguardConfig.from_wgconfig(args.config)
+    create_wireguard_tunnel(args.ns_pid, args.interface, config, args.tmpdir)
     return 0
 
 

@@ -68,6 +68,7 @@ repos:
           - types-jsonschema
           - types-PyYAML
           - types-requests
+          - wireguard-tools
 
 #  - repo: https://github.com/fsfe/reuse-tool
 #    rev: v1.0.0

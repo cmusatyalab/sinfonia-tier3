@@ -16,9 +16,8 @@ from uuid import UUID
 
 import yaml
 from attrs import define
+from wireguard_tools import WireguardKey
 from xdg import xdg_cache_home
-
-from .wireguard import WireguardKey
 
 
 @define

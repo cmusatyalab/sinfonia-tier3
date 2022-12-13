@@ -10,6 +10,7 @@
 
 from __future__ import annotations
 
+from ipaddress import ip_address
 from typing import Any
 from uuid import UUID
 
@@ -23,10 +24,10 @@ from openapi_core.contrib.requests import (
     RequestsOpenAPIResponse,
 )
 from openapi_core.validation.response.validators import ResponseValidator
+from wireguard_tools import WireguardConfig, WireguardKey
 from yarl import URL
 
 from .key_cache import KeyCacheEntry
-from .wireguard import WireguardConfig, WireguardKey
 
 
 @define
@@ -42,11 +43,29 @@ class CloudletDeployment:
     def from_dict(
         cls, private_key: WireguardKey, resp: dict[str, Any]
     ) -> CloudletDeployment:
+        config = resp["TunnelConfig"]
+
+        wgconfig = WireguardConfig.from_dict(
+            dict(
+                private_key=private_key,
+                addresses=config["address"],
+                dns=config["dns"],
+                peers=[
+                    dict(
+                        public_key=config["publicKey"],
+                        endpoint=config["endpoint"],
+                        allowed_ips=config["allowedIPs"],
+                        persistent_keepalive=30,
+                    )
+                ],
+            )
+        )
+
         return cls(
             resp["UUID"],
             resp["ApplicationKey"],
             resp["Status"],
-            WireguardConfig.from_dict(resp["TunnelConfig"], private_key=private_key),
+            wgconfig,
             resp.get("DeploymentName", ""),
             resp.get("Created"),
         )

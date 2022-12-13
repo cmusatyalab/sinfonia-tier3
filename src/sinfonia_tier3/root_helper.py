@@ -16,10 +16,11 @@ from contextlib import contextmanager
 from pathlib import Path
 from typing import Iterator
 
-from pyroute2 import IPRoute, WireGuard
+from pyroute2 import IPRoute
+from wireguard_tools import WireguardConfig
+from wireguard_tools.wireguard_device import get_wireguard_device
 
 from . import __version__
-from .wireguard import WireguardConfig
 
 #
 # Things we have to do as root
@@ -40,7 +41,7 @@ def network_namespace(netns: str) -> Iterator[str | int]:
         yield netns
 
 
-def create_config_attach(interface: str, wgconfig: WireguardConfig, netns: str) -> None:
+def create_config_attach(interface: str, config: WireguardConfig, netns: str) -> None:
     with IPRoute() as ipr:
         # ip link add <interface> type wireguard
         ipr.link("add", ifname=interface, kind="wireguard")
@@ -48,20 +49,11 @@ def create_config_attach(interface: str, wgconfig: WireguardConfig, netns: str) 
         # wait for interface creation
         (iface,) = ipr.poll(ipr.link, "dump", timeout=5, ifname=interface)
 
+        print(config)
         # wg set <interface> private-key <...> peer <...> endpoint <...>
         #    persistent-keepalive <...> allowed-ips <...>
-        wg = WireGuard()
-        wg.set(
-            interface,
-            private_key=str(wgconfig.private_key),
-            peer=dict(
-                public_key=str(wgconfig.public_key),
-                endpoint_addr=str(wgconfig.endpoint_host),
-                endpoint_port=wgconfig.endpoint_port,
-                allowed_ips=[str(address) for address in wgconfig.allowed_ips],
-                persistent_keepalive=30,
-            ),
-        )
+        device = get_wireguard_device(interface)
+        device.set_config(config)
 
         # ip set dev <interface> netns <netns>
         with network_namespace(netns) as net_ns_fd:
@@ -83,7 +75,7 @@ def main() -> int:
     )
     args = parser.parse_args()
 
-    wgconfig = WireguardConfig.from_conf_file(args.wgconfig)
+    wgconfig = WireguardConfig.from_wgconfig(args.wgconfig)
 
     create_config_attach(args.interface, wgconfig, args.netns)
     return 0

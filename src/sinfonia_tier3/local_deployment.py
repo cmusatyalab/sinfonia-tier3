@@ -19,9 +19,9 @@ from tempfile import TemporaryDirectory
 from typing import Sequence
 
 import randomname
+from wireguard_tools import WireguardConfig
 
 from .rootless import create_wireguard_tunnel
-from .wireguard import WireguardConfig
 
 
 def unique_namespace_name(name: str) -> str:
@@ -38,14 +38,14 @@ def unique_namespace_name(name: str) -> str:
 
 
 def sudo_create_wireguard_tunnel(
-    netns_pid: int, interface: str, wgconfig: WireguardConfig, tmpdir: Path
+    netns_pid: int, interface: str, config: WireguardConfig, tmpdir: Path
 ) -> None:
     """Try to bring up wireguard tunnel with sudo sinfonia_tier3.root_helper"""
     sudo = which("sudo")
     assert sudo is not None
 
     wireguard_conf = tmpdir / "wg.conf"
-    wireguard_conf.write_text(wgconfig.wireguard_conf())
+    wireguard_conf.write_text(config.to_wgconfig())
 
     # create, configure and attach WireGuard interface
     subprocess.run(
@@ -64,7 +64,7 @@ def sudo_create_wireguard_tunnel(
 
 def sinfonia_runapp(
     deployment_name: str,
-    tunnel_config: WireguardConfig,
+    config: WireguardConfig,
     application: Sequence[str],
     config_debug: bool = False,
 ) -> int:
@@ -75,7 +75,7 @@ def sinfonia_runapp(
         tmpdir = Path(temporary_directory)
 
         resolv_conf = tmpdir / "resolv.conf"
-        resolv_conf.write_text(tunnel_config.resolv_conf())
+        resolv_conf.write_text(config.to_resolvconf(opt_ndots=5))
 
         if config_debug:
             return 0
@@ -107,20 +107,18 @@ def sinfonia_runapp(
             ]
             + list(
                 chain.from_iterable(
-                    ("--address", str(address)) for address in tunnel_config.addresses
+                    ("--address", str(address)) for address in config.addresses
                 )
             )
             + [WG]
             + list(application)
         ) as netns_proc:
             try:
-                create_wireguard_tunnel(netns_proc.pid, WG, tunnel_config, tmpdir)
+                create_wireguard_tunnel(netns_proc.pid, WG, config, tmpdir)
             except (AssertionError, FileNotFoundError, subprocess.CalledProcessError):
                 print("Failed to run wireguard-go, falling back to sudo root helper")
                 try:
-                    sudo_create_wireguard_tunnel(
-                        netns_proc.pid, WG, tunnel_config, tmpdir
-                    )
+                    sudo_create_wireguard_tunnel(netns_proc.pid, WG, config, tmpdir)
                 except (AssertionError, subprocess.CalledProcessError):
                     print("Failed to run sudo root helper")
                     netns_proc.kill()
