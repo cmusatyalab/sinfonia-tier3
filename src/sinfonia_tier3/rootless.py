@@ -20,7 +20,7 @@ import struct
 import subprocess
 import sys
 import time
-from contextlib import contextmanager, closing
+from contextlib import closing, contextmanager
 from multiprocessing import Pipe, Process
 from multiprocessing.connection import Connection
 from multiprocessing.reduction import recv_handle, send_handle
