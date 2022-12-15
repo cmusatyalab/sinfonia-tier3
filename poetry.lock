@@ -788,6 +788,21 @@ attrs = ">=22.1.0,<23.0.0"
 pyroute2 = ">=0.7.3,<0.8.0"
 
 [[package]]
+name = "wireguard4netns"
+version = "0.1.0"
+description = "WireGuard VPN networking for unprivileged network namespaces"
+category = "main"
+optional = false
+python-versions = ">=3.7,<4.0"
+
+[package.dependencies]
+attrs = ">=22.1.0,<23.0.0"
+importlib-resources = ">=5.0,<6.0"
+pyroute2 = ">=0.7.3,<0.8.0"
+typing-extensions = {version = ">=4.4.0,<5.0.0", markers = "python_version < \"3.8\""}
+wireguard-tools = ">=0.1.1,<0.2.0"
+
+[[package]]
 name = "xdg"
 version = "5.1.1"
 description = "Variables defined by the XDG Base Directory Specification"
@@ -823,7 +838,7 @@ testing = ["flake8 (<5)", "func-timeout", "jaraco.functools", "jaraco.itertools"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.7"
-content-hash = "cbc2fdcf1de6f47d6a123324e14dccc3f2139b245fd7bfec6c6739dee7f64d2e"
+content-hash = "53bdf59141eb64c402ca7cf4931ebce5458cac1589d19b83ed112a8428161d16"
 
 [metadata.files]
 atomicwrites = [
@@ -1343,6 +1358,14 @@ win-inet-pton = [
 wireguard-tools = [
     {file = "wireguard_tools-0.1.1-py3-none-any.whl", hash = "sha256:73f152b58e4d7d06345a64272fad703e3fe12e44d725150c4dc686b506457ca2"},
     {file = "wireguard_tools-0.1.1.tar.gz", hash = "sha256:a4f28d5d748cda14aa28dc6c7870bf0a26b6c6c8579a6429210ac2645c5851de"},
+]
+wireguard4netns = [
+    {file = "wireguard4netns-0.1.0-cp310-cp310-manylinux_2_17_x86_64.manylinux_2_5_x86_64.manylinux1_x86_64.manylinux2014_x86_64.whl", hash = "sha256:0584938d9eb5888120d32ce659529e1bf8dbad5bae294a6006cdc13c94d0e465"},
+    {file = "wireguard4netns-0.1.0-cp311-cp311-manylinux_2_17_x86_64.manylinux_2_5_x86_64.manylinux1_x86_64.manylinux2014_x86_64.whl", hash = "sha256:36dad61c05e903440aa74891a016072fa4e5ce2ae8367d64bfe621afa3b8350c"},
+    {file = "wireguard4netns-0.1.0-cp37-cp37m-manylinux_2_17_x86_64.manylinux_2_5_x86_64.manylinux1_x86_64.manylinux2014_x86_64.whl", hash = "sha256:e06203c789889aac977a989bf3704cf86dd1f71e9782ac056535cd1d4a1b3f83"},
+    {file = "wireguard4netns-0.1.0-cp38-cp38-manylinux_2_17_x86_64.manylinux_2_5_x86_64.manylinux1_x86_64.manylinux2014_x86_64.whl", hash = "sha256:c8aad600d04a04d8f49526efd6fd85bf88206b8ddbf10c4d67354b72568da472"},
+    {file = "wireguard4netns-0.1.0-cp39-cp39-manylinux_2_17_x86_64.manylinux_2_5_x86_64.manylinux1_x86_64.manylinux2014_x86_64.whl", hash = "sha256:6363e4aece9116c1308e0410e19f4a2fd7a77c934e7d0ab560b846951e632bdd"},
+    {file = "wireguard4netns-0.1.0.tar.gz", hash = "sha256:d519e9b8733b2f362ee65a6f3c7e3a1a8c0d2f86ed665e5844fd0ed5734b00dd"},
 ]
 xdg = [
     {file = "xdg-5.1.1-py3-none-any.whl", hash = "sha256:865a7b56ed1d4cd2fce2ead1eddf97360843619757f473cd90b75f1817ca541d"},

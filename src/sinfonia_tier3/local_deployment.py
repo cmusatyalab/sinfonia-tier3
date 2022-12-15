@@ -21,8 +21,6 @@ from typing import Sequence
 import randomname
 from wireguard_tools import WireguardConfig
 
-from .rootless import create_wireguard_tunnel
-
 
 def unique_namespace_name(name: str) -> str:
     """Returns a name with only ascii lowercase letters.

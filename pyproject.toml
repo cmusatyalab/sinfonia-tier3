@@ -35,6 +35,7 @@ xdg = "^5.1.1"
 yarl = "^1.7.2"
 typing-extensions = "^4.4.0"
 wireguard-tools = "^0.1.1"
+wireguard4netns = "^0.1.0"
 
 [tool.poetry.scripts]
 sinfonia-tier3 = "sinfonia_tier3.cli:main"
