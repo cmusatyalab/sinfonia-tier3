@@ -73,15 +73,19 @@ And then use poetry to install the necessary dependencies,
 
 ## Why do we need a sudo password when deploying
 
-We need root access to create and configure the WireGuard tunnel endpoint that
-connects the local application's network namespace/container to the deployed
-backend. All of the code running as root is contained in
+Actually you should not need a password if `wireguard4netns` works correctly
+But if for some reason it fails to create the tuntap device and launch
+wireguard-go, the code will fall back on the older `sudo` implementation.
+
+The older `sudo` implementation uses the in-kernel Wireguard implementation and
+needs root access to create and configure the WireGuard device and endpoint.
+All of the code running as root is contained in
 [src/sinfonia_tier3/root_helper.py](https://github.com/cmusatyalab/sinfonia-tier3/blob/main/src/sinfonia_tier3/root_helper.py)
 
 It runs the equivalent of the following.
 
 ```sh
-ip link add wg-tunnel type wireguard
-wg set wg-tunnel private-key <private-key> peer <public-key> endpoint ...
-ip link set dev wg-tunnel netns <application network namespace>
+    ip link add wg-tunnel type wireguard
+    wg set wg-tunnel private-key <private-key> peer <public-key> endpoint ...
+    ip link set dev wg-tunnel netns <application network namespace>
 ```
