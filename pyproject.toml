@@ -42,7 +42,7 @@ sinfonia-tier3 = "sinfonia_tier3.cli:main"
 
 [tool.poetry.group.dev.dependencies]
 black = "^22.10.0"
-invoke = "^1.7.3"
+poethepoet = "^0.16.5"
 pre-commit = "^2.16.0"
 tbump = "^6.9.0"
 
@@ -92,6 +92,9 @@ filterwarnings = [
     "error",
     "ignore:Subclassing validator classes:DeprecationWarning",
 ]
+
+[tool.poe]
+include = "tasks.toml"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
