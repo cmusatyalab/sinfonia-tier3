@@ -68,8 +68,6 @@ repos:
           - types-jsonschema
           - types-PyYAML
           - types-requests
-          - wireguard-tools
-          - wireguard4netns
 
 #  - repo: https://github.com/fsfe/reuse-tool
 #    rev: v1.0.0

@@ -17,8 +17,7 @@ from pathlib import Path
 from typing import Iterator
 
 from pyroute2 import IPRoute
-from wireguard_tools import WireguardConfig
-from wireguard_tools.wireguard_device import get_wireguard_device
+from wireguard_tools import WireguardConfig, WireguardDevice
 
 from . import __version__
 
@@ -49,10 +48,9 @@ def create_config_attach(interface: str, config: WireguardConfig, netns: str) ->
         # wait for interface creation
         (iface,) = ipr.poll(ipr.link, "dump", timeout=5, ifname=interface)
 
-        print(config)
         # wg set <interface> private-key <...> peer <...> endpoint <...>
         #    persistent-keepalive <...> allowed-ips <...>
-        device = get_wireguard_device(interface)
+        device = WireguardDevice.get(interface)
         device.set_config(config)
 
         # ip set dev <interface> netns <netns>
