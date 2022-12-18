@@ -792,7 +792,7 @@ python-versions = "*"
 
 [[package]]
 name = "wireguard-tools"
-version = "0.1.1"
+version = "0.2.0"
 description = "Pure python reimplementation of wireguard-tools"
 category = "main"
 optional = false
@@ -804,7 +804,7 @@ pyroute2 = ">=0.7.3,<0.8.0"
 
 [[package]]
 name = "wireguard4netns"
-version = "0.1.0"
+version = "0.1.1"
 description = "WireGuard VPN networking for unprivileged network namespaces"
 category = "main"
 optional = false
@@ -815,7 +815,7 @@ attrs = ">=22.1.0,<23.0.0"
 importlib-resources = ">=5.0,<6.0"
 pyroute2 = ">=0.7.3,<0.8.0"
 typing-extensions = {version = ">=4.4.0,<5.0.0", markers = "python_version < \"3.8\""}
-wireguard-tools = ">=0.1.1,<0.2.0"
+wireguard-tools = ">=0.2.0,<0.3.0"
 
 [[package]]
 name = "xdg"
@@ -853,7 +853,7 @@ testing = ["flake8 (<5)", "func-timeout", "jaraco.functools", "jaraco.itertools"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.7"
-content-hash = "e2a7dec9d943f7184cd79691cbb1c145ab5feefdd6a698a2ec9724801ba3c816"
+content-hash = "b371c451dea786bb4d3fb3986404ff2a45dd04b0a0509c729e8862eb9c5327c3"
 
 [metadata.files]
 atomicwrites = [
@@ -1375,16 +1375,16 @@ win-inet-pton = [
     {file = "win_inet_pton-1.1.0.tar.gz", hash = "sha256:dd03d942c0d3e2b1cf8bab511844546dfa5f74cb61b241699fa379ad707dea4f"},
 ]
 wireguard-tools = [
-    {file = "wireguard_tools-0.1.1-py3-none-any.whl", hash = "sha256:73f152b58e4d7d06345a64272fad703e3fe12e44d725150c4dc686b506457ca2"},
-    {file = "wireguard_tools-0.1.1.tar.gz", hash = "sha256:a4f28d5d748cda14aa28dc6c7870bf0a26b6c6c8579a6429210ac2645c5851de"},
+    {file = "wireguard_tools-0.2.0-py3-none-any.whl", hash = "sha256:3c706e83a350573536eee70b21257193a50cf9afae79bc9d4bcace0a7bdf5548"},
+    {file = "wireguard_tools-0.2.0.tar.gz", hash = "sha256:6d2bb7754c350528316ae1e658ba3968e23e39ef804ec61e1d4df9e554e8593c"},
 ]
 wireguard4netns = [
-    {file = "wireguard4netns-0.1.0-cp310-cp310-manylinux_2_17_x86_64.manylinux_2_5_x86_64.manylinux1_x86_64.manylinux2014_x86_64.whl", hash = "sha256:0584938d9eb5888120d32ce659529e1bf8dbad5bae294a6006cdc13c94d0e465"},
-    {file = "wireguard4netns-0.1.0-cp311-cp311-manylinux_2_17_x86_64.manylinux_2_5_x86_64.manylinux1_x86_64.manylinux2014_x86_64.whl", hash = "sha256:36dad61c05e903440aa74891a016072fa4e5ce2ae8367d64bfe621afa3b8350c"},
-    {file = "wireguard4netns-0.1.0-cp37-cp37m-manylinux_2_17_x86_64.manylinux_2_5_x86_64.manylinux1_x86_64.manylinux2014_x86_64.whl", hash = "sha256:e06203c789889aac977a989bf3704cf86dd1f71e9782ac056535cd1d4a1b3f83"},
-    {file = "wireguard4netns-0.1.0-cp38-cp38-manylinux_2_17_x86_64.manylinux_2_5_x86_64.manylinux1_x86_64.manylinux2014_x86_64.whl", hash = "sha256:c8aad600d04a04d8f49526efd6fd85bf88206b8ddbf10c4d67354b72568da472"},
-    {file = "wireguard4netns-0.1.0-cp39-cp39-manylinux_2_17_x86_64.manylinux_2_5_x86_64.manylinux1_x86_64.manylinux2014_x86_64.whl", hash = "sha256:6363e4aece9116c1308e0410e19f4a2fd7a77c934e7d0ab560b846951e632bdd"},
-    {file = "wireguard4netns-0.1.0.tar.gz", hash = "sha256:d519e9b8733b2f362ee65a6f3c7e3a1a8c0d2f86ed665e5844fd0ed5734b00dd"},
+    {file = "wireguard4netns-0.1.1-cp310-cp310-manylinux_2_17_x86_64.manylinux_2_5_x86_64.manylinux1_x86_64.manylinux2014_x86_64.whl", hash = "sha256:3a0374a58ee9129a123084dca916e226fbfc005f1c505d53f8a81184f0ef5de9"},
+    {file = "wireguard4netns-0.1.1-cp311-cp311-manylinux_2_17_x86_64.manylinux_2_5_x86_64.manylinux1_x86_64.manylinux2014_x86_64.whl", hash = "sha256:cf711fe499a6b276a55dada664b4e2c736024bfe4d34f9f2d20b30ed881aa780"},
+    {file = "wireguard4netns-0.1.1-cp37-cp37m-manylinux_2_17_x86_64.manylinux_2_5_x86_64.manylinux1_x86_64.manylinux2014_x86_64.whl", hash = "sha256:0ee87be18d7a7a7bc9254f7c129a59127376734a6f43770d21db0ce6bb13aa33"},
+    {file = "wireguard4netns-0.1.1-cp38-cp38-manylinux_2_17_x86_64.manylinux_2_5_x86_64.manylinux1_x86_64.manylinux2014_x86_64.whl", hash = "sha256:cab5bb506005e1bd6a0398375cc315ac7a0dbd61492c95c8b96de4c4c4141493"},
+    {file = "wireguard4netns-0.1.1-cp39-cp39-manylinux_2_17_x86_64.manylinux_2_5_x86_64.manylinux1_x86_64.manylinux2014_x86_64.whl", hash = "sha256:fc8d6661504700d63bfd3420cf39eafe4a0c86034f2a1f78a85d164b9b0eeabd"},
+    {file = "wireguard4netns-0.1.1.tar.gz", hash = "sha256:c7fbf2ee3aead71741a8fe56b9e5c84a613d07879b4f8dd3b09e9c4b44e7eca2"},
 ]
 xdg = [
     {file = "xdg-5.1.1-py3-none-any.whl", hash = "sha256:865a7b56ed1d4cd2fce2ead1eddf97360843619757f473cd90b75f1817ca541d"},
