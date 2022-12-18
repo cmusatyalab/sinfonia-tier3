@@ -19,6 +19,7 @@ from tempfile import TemporaryDirectory
 from typing import Sequence
 
 import randomname
+from wireguard4netns import create_wireguard_tunnel
 from wireguard_tools import WireguardConfig
 
 
