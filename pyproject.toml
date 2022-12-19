@@ -90,6 +90,15 @@ files = ["src", "tests"]
 module = "tests.*"
 disallow_untyped_decorators = false
 
+[[tool.mypy.overrides]]
+# ignore missing type hints errors from untyped modules
+module = [
+    "openapi_core.*",
+    "pyroute2.*",
+    "randomname.*",
+]
+ignore_missing_imports = true
+
 [tool.pytest.ini_options]
 filterwarnings = [
     "error",
