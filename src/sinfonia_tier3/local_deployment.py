@@ -77,6 +77,8 @@ def sinfonia_runapp(
         resolv_conf.write_text(config.to_resolvconf(opt_ndots=5))
 
         if config_debug:
+            wireguard_conf = tmpdir / "wg.conf"
+            wireguard_conf.write_text(config.to_wgconfig())
             return 0
 
         unshare = which("unshare")
