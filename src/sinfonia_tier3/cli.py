@@ -86,6 +86,16 @@ def sinfonia_tier3(
 
     if qrcode:
         wgconf = deployment_data.tunnel_config.to_wgconfig(wgquick_format=True)
+
+        # Hacky way to add the wireguard-android specific IncludedApplications.
+        # We could probably extend wireguard-tools to add these as well as
+        # adding a method to generate the qrcode object.
+        if application:
+            included_apps = ",".join(application)
+            wgconf.replace(
+                "[Interface]", f"[Interface]\nIncludedApplications = {included_apps}"
+            )
+
         qrconf = pyqrcode.create(wgconf, error="L")
         print(qrconf.terminal(quiet_zone=1))
         return 0
