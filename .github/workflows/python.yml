@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022 Carnegie Mellon University
+# SPDX-FileCopyrightText: 2022-2023 Carnegie Mellon University
 # SPDX-License-Identifier: 0BSD
 
 name: python
@@ -22,7 +22,7 @@ jobs:
       - name: Set up python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.7'
+          python-version: "3.8"
       - name: Run pre-commit checks
         uses: pre-commit/action@v3.0.0
   tests:
@@ -30,7 +30,7 @@ jobs:
     needs: pre-commit
     strategy:
       matrix:
-        python-version: [3.7, "3.10"]
+        python-version: ["3.7", "3.10"]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
