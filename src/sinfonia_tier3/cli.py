@@ -92,7 +92,7 @@ def sinfonia_tier3(
         # adding a method to generate the qrcode object.
         if application:
             included_apps = ",".join(application)
-            wgconf.replace(
+            wgconf = wgconf.replace(
                 "[Interface]", f"[Interface]\nIncludedApplications = {included_apps}"
             )
 
