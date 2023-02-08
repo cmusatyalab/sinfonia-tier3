@@ -95,6 +95,7 @@ disallow_untyped_decorators = false
 # ignore missing type hints errors from untyped modules
 module = [
     "openapi_core.*",
+    "pyqrcode.*",
     "pyroute2.*",
     "randomname.*",
 ]
