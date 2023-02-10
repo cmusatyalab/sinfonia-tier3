@@ -14,7 +14,6 @@ import argparse
 from typing import Sequence
 from uuid import UUID
 
-import pyqrcode
 from requests.exceptions import HTTPError
 from yarl import URL
 
@@ -85,19 +84,11 @@ def sinfonia_tier3(
     deployment_data = deployments[0]
 
     if qrcode:
-        wgconf = deployment_data.tunnel_config.to_wgconfig(wgquick_format=True)
+        # Add the wireguard-android specific IncludedApplications.
+        config = deployment_data.tunnel_config
+        config.included_applications.extend(application)
 
-        # Hacky way to add the wireguard-android specific IncludedApplications.
-        # We could probably extend wireguard-tools to add these as well as
-        # adding a method to generate the qrcode object.
-        if application:
-            included_apps = ",".join(application)
-            wgconf = wgconf.replace(
-                "[Interface]", f"[Interface]\nIncludedApplications = {included_apps}"
-            )
-
-        qrconf = pyqrcode.create(wgconf, error="L")
-        print(qrconf.terminal(quiet_zone=1))
+        config.to_qrcode().terminal(compact=True)
         return 0
 
     return sinfonia_runapp(

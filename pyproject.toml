@@ -30,7 +30,6 @@ python = "^3.7"
 attrs = ">=22.1.0"
 importlib-resources = "^5.0"
 openapi-core = "^0.14.2"
-pyqrcode = "^1.2.1"
 pyroute2 = "^0.7.3"
 pyyaml = "^6.0"
 randomname = "^0.1.5"
@@ -38,7 +37,7 @@ requests = "^2.28.1"
 xdg = "^5.1.1"
 yarl = "^1.7.2"
 typing-extensions = "^4.4.0"
-wireguard-tools = "^0.3.0"
+wireguard-tools = "^0.4.0"
 wireguard4netns = "^0.1.2"
 
 [tool.poetry.scripts]
@@ -95,7 +94,6 @@ disallow_untyped_decorators = false
 # ignore missing type hints errors from untyped modules
 module = [
     "openapi_core.*",
-    "pyqrcode.*",
     "pyroute2.*",
     "randomname.*",
 ]
