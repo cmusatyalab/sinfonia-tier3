@@ -3,7 +3,7 @@
 #
 # deploy helm charts to a cloudlet kubernetes cluster for edge-native applications
 #
-# Copyright (c) 2021-2022 Carnegie Mellon University
+# Copyright (c) 2021-2023 Carnegie Mellon University
 #
 # SPDX-License-Identifier: MIT
 #
