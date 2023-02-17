@@ -8,7 +8,7 @@
 # SPDX-License-Identifier: MIT
 #
 
-__version__ = "0.7.0.post.dev0"
+__version__ = "0.7.1"
 
 from .cli import sinfonia_tier3
 
