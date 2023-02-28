@@ -18,7 +18,6 @@ from shutil import which
 from tempfile import TemporaryDirectory
 from typing import Sequence
 
-import randomname
 from wireguard4netns import create_wireguard_tunnel
 from wireguard_tools import WireguardConfig
 
@@ -31,9 +30,7 @@ def unique_namespace_name(name: str) -> str:
     functionally required.
     """
     # str.translate is probably faster, but we only do this once...
-    return "".join(c for c in name.lower() if c.islower()) or randomname.get_name(
-        sep=""
-    )
+    return "".join(c for c in name.lower() if c.islower()) or "sinfonia"
 
 
 def sudo_create_wireguard_tunnel(

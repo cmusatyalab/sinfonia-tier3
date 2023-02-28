@@ -32,7 +32,6 @@ importlib-resources = "^5.0"
 openapi-core = "^0.14.2"
 pyroute2 = "^0.7.3"
 pyyaml = "^6.0"
-randomname = "^0.1.5"
 requests = "^2.28.1"
 xdg = "^5.1.1"
 yarl = "^1.7.2"
@@ -95,7 +94,6 @@ disallow_untyped_decorators = false
 module = [
     "openapi_core.*",
     "pyroute2.*",
-    "randomname.*",
 ]
 ignore_missing_imports = true
 

@@ -299,21 +299,6 @@ docs = ["furo (>=2022.12.7)", "sphinx (>=5.3)", "sphinx-autodoc-typehints (>=1.1
 testing = ["covdefaults (>=2.2.2)", "coverage (>=7.0.1)", "pytest (>=7.2)", "pytest-cov (>=4)", "pytest-timeout (>=2.1)"]
 
 [[package]]
-name = "fire"
-version = "0.5.0"
-description = "A library for automatically generating command line interfaces."
-category = "main"
-optional = false
-python-versions = "*"
-files = [
-    {file = "fire-0.5.0.tar.gz", hash = "sha256:a6b0d49e98c8963910021f92bba66f65ab440da2982b78eb1bbf95a0a34aacc6"},
-]
-
-[package.dependencies]
-six = "*"
-termcolor = "*"
-
-[[package]]
 name = "identify"
 version = "2.5.18"
 description = "File identification library for Python"
@@ -1079,20 +1064,6 @@ files = [
 ]
 
 [[package]]
-name = "randomname"
-version = "0.1.5"
-description = "Generate random adj-noun names like docker and github."
-category = "main"
-optional = false
-python-versions = "*"
-files = [
-    {file = "randomname-0.1.5.tar.gz", hash = "sha256:e10d14ea10895ee5bc417bdcc6d955e0b586f3bc67094ab87afcf8dcac23ab92"},
-]
-
-[package.dependencies]
-fire = "*"
-
-[[package]]
 name = "requests"
 version = "2.28.2"
 description = "Python HTTP for Humans."
@@ -1222,21 +1193,6 @@ cli-ui = ">=0.10.3"
 docopt = ">=0.6.2,<0.7.0"
 schema = ">=0.7.1,<0.8.0"
 tomlkit = ">=0.5.8"
-
-[[package]]
-name = "termcolor"
-version = "2.2.0"
-description = "ANSI color formatting for output in terminal"
-category = "main"
-optional = false
-python-versions = ">=3.7"
-files = [
-    {file = "termcolor-2.2.0-py3-none-any.whl", hash = "sha256:91ddd848e7251200eac969846cbae2dacd7d71c2871e92733289e7e3666f48e7"},
-    {file = "termcolor-2.2.0.tar.gz", hash = "sha256:dfc8ac3f350788f23b2947b3e6cfa5a53b630b612e6cd8965a015a776020b99a"},
-]
-
-[package.extras]
-tests = ["pytest", "pytest-cov"]
 
 [[package]]
 name = "toml"
@@ -1600,4 +1556,4 @@ testing = ["flake8 (<5)", "func-timeout", "jaraco.functools", "jaraco.itertools"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.7"
-content-hash = "89ee30542969bff071f9a16cd561d43c5a377ec0493e3a1f36e35cdf349be006"
+content-hash = "13c26c5d73cb82d9285fdf7fcc116c3eda0646229678aa7dbc683bdf57c04b7e"
