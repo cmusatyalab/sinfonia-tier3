@@ -11,6 +11,7 @@
 from __future__ import annotations
 
 import argparse
+from io import StringIO
 from typing import Sequence
 from uuid import UUID
 
@@ -46,7 +47,9 @@ def parse_args(args: list[str] | None = None) -> argparse.Namespace:
         "--version", action="version", version=f"%(prog)s {__version__}"
     )
     parser.add_argument(
-        "--qrcode", action="store_true", help="Generate QR code for wireguard-android"
+        "--qrcode",
+        choices=["compact", "alt"],
+        help="Generate QR code for wireguard-android",
     )
     parser.add_argument(
         "--zeroconf",
@@ -65,7 +68,7 @@ def sinfonia_tier3(
     application: Sequence[str],
     config_debug: bool = False,
     debug: bool = False,
-    qrcode: bool = False,
+    qrcode: str | None = None,
     zeroconf: bool = False,
 ) -> int:
     # Request one or more backend deployments
@@ -83,12 +86,19 @@ def sinfonia_tier3(
     # Pick the best deployment (first returned for now...)
     deployment_data = deployments[0]
 
-    if qrcode:
+    if qrcode is not None:
         # Add the wireguard-android specific IncludedApplications.
         config = deployment_data.tunnel_config
         config.included_applications.extend(application)
 
-        config.to_qrcode().terminal(compact=True)
+        qr = config.to_qrcode()
+
+        if qrcode == "compact":
+            qr.terminal(compact=True)
+        else:
+            s = StringIO()
+            qr.save(s, kind="txt", dark="⬛", light="⬜")
+            print(s.getvalue())
         return 0
 
     return sinfonia_runapp(

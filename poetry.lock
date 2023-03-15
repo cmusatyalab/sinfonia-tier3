@@ -1398,14 +1398,14 @@ files = [
 
 [[package]]
 name = "wireguard-tools"
-version = "0.4.0"
+version = "0.4.1"
 description = "Pure python reimplementation of wireguard-tools"
 category = "main"
 optional = false
 python-versions = ">=3.7,<4.0"
 files = [
-    {file = "wireguard_tools-0.4.0-py3-none-any.whl", hash = "sha256:49274b9498adffe5568413c78ecdf939c5d96f7977eabbc9358b914b80dcf0e3"},
-    {file = "wireguard_tools-0.4.0.tar.gz", hash = "sha256:6f99e0b8cb36e9853d2116bb257434831877fb36b5f1cf85a3cc3be0f4e50248"},
+    {file = "wireguard_tools-0.4.1-py3-none-any.whl", hash = "sha256:5edebeab984675d314e296f68375ef2c02f230b66c35956b8287eb5e3f89cca7"},
+    {file = "wireguard_tools-0.4.1.tar.gz", hash = "sha256:bce0eceb246e1d630b441b3de73d57fa25b19f0b24a7c06018e13bf52ef959b9"},
 ]
 
 [package.dependencies]
@@ -1556,4 +1556,4 @@ testing = ["flake8 (<5)", "func-timeout", "jaraco.functools", "jaraco.itertools"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.7"
-content-hash = "13c26c5d73cb82d9285fdf7fcc116c3eda0646229678aa7dbc683bdf57c04b7e"
+content-hash = "efe7bef1dd67bc0fe561933fe0827b2d6b6159495fc1ccf8b001e259b3b88d7e"
