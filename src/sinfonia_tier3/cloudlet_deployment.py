@@ -10,19 +10,18 @@
 
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, cast
 from uuid import UUID
 
 import importlib_resources
 import requests
 import yaml
 from attrs import define
-from openapi_core import create_spec
+from openapi_core import Spec, unmarshal_response
 from openapi_core.contrib.requests import (
     RequestsOpenAPIRequest,
     RequestsOpenAPIResponse,
 )
-from openapi_core.validation.response.validators import ResponseValidator
 from wireguard_tools import WireguardConfig, WireguardKey
 from yarl import URL
 
@@ -114,20 +113,24 @@ def sinfonia_deploy(
         .read_text()
     )
     spec_dict = yaml.safe_load(spec_text)
-    spec = create_spec(spec_dict)
+    spec = Spec.create(spec_dict)
 
     # create request/response wrappers for validation
     openapi_request = RequestsOpenAPIRequest(response.request)
     openapi_response = RequestsOpenAPIResponse(response)
 
-    # validate the response
-    validator = ResponseValidator(
-        spec, custom_formatters={"wireguard_public_key": WireguardKeyFormatter()}
+    # validate and unpack the response
+    extra_validators = dict(wireguard_public_Key=WireguardKeyFormatter())
+    result = unmarshal_response(
+        openapi_request,
+        openapi_response,
+        spec=spec,
+        extra_format_validators=extra_validators,
     )
-    result = validator.validate(openapi_request, openapi_response)
-    result.raise_for_errors()
 
+    # validation should have failed if this is None, I think
+    assert result.data is not None
     return [
         CloudletDeployment.from_dict(deployment_keys.private_key, deployment)
-        for deployment in result.data
+        for deployment in cast(Any, result.data)
     ]

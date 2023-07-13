@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 import yaml
-from openapi_core import create_spec
+from openapi_core import Spec
 
 
 class TestOpenApiSpecs:
@@ -17,5 +17,5 @@ class TestOpenApiSpecs:
     def test_tier2_spec(self, specification_dir: Path) -> None:
         spec_yaml = specification_dir.joinpath("sinfonia_tier2.yaml").read_text()
         spec_dict = yaml.safe_load(spec_yaml)
-        spec = create_spec(spec_dict)
+        spec = Spec.create(spec_dict)
         assert spec is not None
