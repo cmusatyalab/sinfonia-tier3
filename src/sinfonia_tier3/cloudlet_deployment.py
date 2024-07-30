@@ -69,16 +69,16 @@ class CloudletDeployment:
         )
 
 
-class WireguardKeyFormatter:
-    def validate(self, value: str) -> bool:
-        try:
-            WireguardKey(value)
-            return True
-        except ValueError:
-            return False
+def validate_wireguard_key(value: str) -> bool:
+    try:
+        WireguardKey(value)
+        return True
+    except ValueError:
+        return False
 
-    def unmarshal(self, value: str) -> WireguardKey:
-        return WireguardKey(value)
+
+def unmarshal_wireguard_key(value: str) -> WireguardKey:
+    return WireguardKey(value)
 
 
 def sinfonia_deploy(
@@ -120,12 +120,14 @@ def sinfonia_deploy(
     openapi_response = RequestsOpenAPIResponse(response)
 
     # validate and unpack the response
-    extra_validators = dict(wireguard_public_Key=WireguardKeyFormatter())
+    extra_validators = dict(wireguard_public_key=validate_wireguard_key)
+    extra_unmarshallers = dict(wireguard_public_key=unmarshal_wireguard_key)
     result = unmarshal_response(
         openapi_request,
         openapi_response,
         spec=spec,
         extra_format_validators=extra_validators,
+        extra_format_unmarshallers=extra_unmarshallers,
     )
 
     # validation should have failed if this is None, I think
