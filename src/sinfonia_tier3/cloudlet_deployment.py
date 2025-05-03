@@ -27,6 +27,10 @@ from yarl import URL
 
 from .key_cache import KeyCacheEntry
 
+import socket
+import time
+from zeroconf import Zeroconf, ServiceBrowser, ServiceListener, ServiceStateChange, ServiceInfo
+
 
 @define
 class CloudletDeployment:
@@ -80,16 +84,85 @@ def validate_wireguard_key(value: str) -> bool:
 def unmarshal_wireguard_key(value: str) -> WireguardKey:
     return WireguardKey(value)
 
+################ 
+# I used zeroconf library: https://github.com/python-zeroconf/python-zeroconf/blob/master/README.rst
+# but can also do with Avahi-browse if you want (I know you mentioned this 
+# it's a very simple change) 
+# ###############
+def discover_local_tier2_service(
+    service_type: str = "cloudlet._sinfonia._tcp.local.",
+    timeout: float = 10.0
+) -> URL | None:
+    """
+    Discover a local Tier2 endpoint via mDNS for the specified service type.
+    Returns the first discovered URL (http://host:port) or None if none found.
+    """
+
+    # Store discovered addresses here
+    discovered_urls: list[URL] = []
+
+    class CloudletListener:
+        # A listener to handle newly added services.
+        def add_service(self, zeroconf: Zeroconf, service_type: str, name: str) -> None:
+            info = zeroconf.get_service_info(service_type, name)
+            if info:
+                # Use IP from TXT records if available, otherwise use the address from mDNS
+                if b'ip' in info.properties:
+                    host = info.properties[b'ip'].decode('utf-8')
+                elif info.addresses:
+                    host = socket.inet_ntoa(info.addresses[0])
+                else:
+                    print("No host address found in service info.")
+                    return
+
+                url = URL.build(scheme="http", host=host)
+                discovered_urls.append(url)
+        
+        def remove_service(self, zeroconf: Zeroconf, service_type: str, name: str) -> None:
+            # Handle service removal if needed
+            print(f"Service {name} removed")
+        def update_service(
+            self, zeroconf: Zeroconf, service_type: str, name: str, state_change: ServiceStateChange
+        ) -> None:
+            # Handle service update if needed
+            print(f"Service {name} updated")
+
+    zc = Zeroconf()
+    listener = CloudletListener()
+    browser = ServiceBrowser(zc, service_type, listener=listener)
+
+    # Wait briefly to see if we discover anything
+    # In a future implementation, we could optimize to concurrently discover tier 1 compute
+    time.sleep(timeout)
+
+
+    zc.close()
+
+    if discovered_urls:
+        return discovered_urls[0]
+    return None
+
 
 def sinfonia_deploy(
     tier1_url: URL, application_uuid: UUID, debug: bool = False, zeroconf: bool = False
 ) -> list[CloudletDeployment]:
     """Request a backend (re)deployment from the orchestrator"""
     deploy_base = tier1_url
+    extra_headers = {}
+
     if zeroconf:
-        raise NotImplementedError("Zeroconf functionality is still unfinished")
         # - perform MDNS lookup for "cloudlet._sinfonia._tcp.local."
         # override tier1_url and pass original tier1_url as a request header
+        ## FOR ANNOUNCING WE WANT IT TO BE AUTOMATIC
+        discovered_url = discover_local_tier2_service()
+        if discovered_url is not None:
+            print(f"[zeroconf] Discovered local Tier2 at {discovered_url}")
+            # Override deploy_base if found
+            deploy_base = discovered_url
+            # Also pass original Tier1 URL along
+            extra_headers["X-Sinfonia-Original-Tier1"] = str(tier1_url)
+        else:
+            print("[zeroconf] No local Tier2 discovered; continuing with provided tier1_url")
 
     deployment_keys = KeyCacheEntry.load(application_uuid)
     deployment_url = (
